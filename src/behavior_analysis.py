@@ -29,3 +29,16 @@ def load_behavior_data(file_path):
         behavior_data = h5_to_flat_dict(h5_file)
     
     return behavior_data
+
+
+def extract_trials(frequency_array):
+    """Extract the trials for each unique frequency in the frequency array."""
+    freq_trials = {}
+    for freq in np.unique(frequency_array):
+        freq_trials[freq] = np.where(frequency_array == freq)[0]
+    num_trials = frequency_array.shape[0]
+    uniq_freq = np.unique(frequency_array).shape[0]
+    freq_np = np.zeros((num_trials, uniq_freq))
+    for i, freq in enumerate(freq_trials.keys()):
+        freq_np[freq_trials[freq], i] = 1
+    return freq_np
