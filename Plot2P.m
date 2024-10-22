@@ -2,17 +2,17 @@ clear
 
 % directory finding or entering code
 % for now, explicitly load info
-cd('/Users/sammehan/Documents/Wehr Lab/Alzheimers2P/Suite2POutput/wehr2867/10-08-24-000')
+cd('/Users/sammehan/Documents/Wehr Lab/Alzheimers2P/Suite2POutput/wehr2867/10-15-24-002')
 
 
-currDir = '/Users/sammehan/Documents/Wehr Lab/Alzheimers2P/Suite2POutput/wehr2867/10-08-24-000'; %maybe later this will fill with argin dir
+currDir = '/Users/sammehan/Documents/Wehr Lab/Alzheimers2P/Suite2POutput/wehr2867/10-15-24-002'; %maybe later this will fill with argin dir
 
 behaviorH5 = dir('wehr*.mat');
 load(behaviorH5.name)
 load('Fall.mat')
 fullPathH5 = fullfile(currDir, behaviorH5.name); % Need to add the ability to add a-z labels
 
-tones = h5read('/Users/sammehan/Documents/Wehr Lab/Alzheimers2P/Suite2POutput/wehr2867/10-08-24-000/wehr2867_am_tuning_curve_20241008a.h5', '/resultsData/currentFreq');
+tones = h5read('/Users/sammehan/Documents/Wehr Lab/Alzheimers2P/Suite2POutput/wehr2867/10-15-24-002/wehr2867_am_tuning_curve_20241015b.h5', '/resultsData/currentFreq');
 allTones = unique(tones);
 
 % tunedList = [14 18 24 28 30 32 35 51 58 69 72 75 84 90 96 98 104 118 135 140 161 175 187 211 213 241 259 267 301 359];
@@ -45,7 +45,7 @@ cmap = jet(63);
 
 % for iCell = 1:length(tunedList)
 %     currCell = tunedList(iCell);
-for iCell = 1:size(dFFcells, 1)
+for iCell = 200:size(dFFcells, 1)
     currCell = iCell;
     for iTone = 1:length(timestamps)
         currTimestamps = timestamps{iTone};

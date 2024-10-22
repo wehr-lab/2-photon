@@ -1,8 +1,7 @@
-function fig = Plot2PCurves(plotDir, iCell)
+function fig = PlotWN(plotDir, iCell)
 
 plotDeconvolved = 0; %logical for plotting deconvolved signal
 currDir = plotDir; % enter directory containing .sbx and .mat recording files
-% tunedList = [14 18 24 28 30 32 35 51 58 69 72 75 84 90 96 98 104 118 135 140 161 175 187 211 213 241 259 267 301 359];
 
 cd(currDir)
 
@@ -66,10 +65,6 @@ end
 frameIndex = 1:2:length(frames);
 frames = frames(frameIndex);
 
-for iFreq = 1:length(allTones)
-    timestamps{iFreq} = frames(tones == allTones(iFreq));
-end
-
 iscellLog = logical(iscellList(:, 1));
 cellsToPlot = F(iscellLog, :);
 neucellsToPlot = Fneu(iscellLog, :);
@@ -90,15 +85,17 @@ minTimestamps = min(timestampCount);
 cmap = jet(max(timestampCount));
 
 currCell = iCell;
-for iTone = 1:length(timestamps)
-    currTimestamps = timestamps{iTone};
+for iTone = 1:length(frames)
+    currTimestamps = frames(iTone);
     if length(currTimestamps) ~= minTimestamps
         currTimestamps = currTimestamps(1:minTimestamps);
     end
     for iTrial = 1:length(currTimestamps)
         currRange = (currTimestamps(iTrial) - 10):(currTimestamps(iTrial) + 20);
-        if sum(currRange <= 0) > 1
-            currRangeLog = currRa
+        if ~isempty(currRange(currRange <= 0))
+            currRangeLog = currRange < 1;
+            currRange(currRangeLog) = 1;
+        end
         meanRange(iTrial, :) = dFFcells(currCell, currRange);
         if plotDeconvolved == 1
             if iTrial == 1

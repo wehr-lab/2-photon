@@ -22,7 +22,9 @@ tones = h5read(h5path, '/resultsData/currentFreq');
 allTones = unique(tones);
 
 goodStats = stat(iscellLog);
-tunedList = [14 18 24 28 30 32 35 51 58 69 72 75 84 90 96 98 104 118 135 140 161 175 187 211 213 241 259 267 301 359];
+%tunedList = [14 18 24 28 30 32 35 51 58 69 72 75 84 90 96 98 104 118 135 140 161 175 187 211 213 241 259 267 301 359];
+tunedList = [3 13 18 32 53 59 71 73 114 120 125 289 306 307];
+
 
 for iROI = 1:length(tunedList)
     if iROI == 1
