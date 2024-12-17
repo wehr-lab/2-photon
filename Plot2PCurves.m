@@ -79,10 +79,6 @@ corrScalar = 0.7;
 cellsToPlotCorr = cellsToPlot - (neucellsToPlot * corrScalar);
 cellsMean = mean(cellsToPlot, 2);
 
-for iNeuron = 1:sum(iscellLog)
-    dFFcells(iNeuron, :) = (cellsToPlotCorr(iNeuron, :) - cellsMean(iNeuron))/cellsMean(iNeuron);
-end
-
 for i = 1:length(timestamps)
     timestampCount(i) = length(timestamps{1, i});
 end
@@ -97,11 +93,16 @@ for iTone = 1:length(timestamps)
     end
     for iTrial = 1:length(currTimestamps)
         currRange = (currTimestamps(iTrial) - 10):(currTimestamps(iTrial) + 20);
+        normRange = (currTimestamps(iTrial) - 11):(currTimestamps(iTrial) - 1);
         if ~isempty(currRange(currRange <= 0))
             currRangeLog = currRange < 1;
             currRange(currRangeLog) = 1;
         end
-        meanRange(iTrial, :) = dFFcells(currCell, currRange);
+        if ~isempty(normRange(normRange <= 0))
+            normRange = normRange(normRange > 0);
+        end
+        currTrace = (cellsToPlotCorr(currCell, currRange) - mean(cellsToPlotCorr(currCell, normRange)))/mean(cellsToPlotCorr(currCell, normRange));
+        meanRange(iTrial, :) = currTrace;
         if plotDeconvolved == 1
             if iTrial == 1
                 figDecon = figure;
