@@ -18,7 +18,7 @@ function [] = Plot2P(varargin)
     FallPath = fullfile(datadir, '/suite2p/plane0/Fall.mat');
     load(FallPath)
     iscellList = load(FallPath, 'iscell');
-    iscellList = iscellList.iscell(:, 1);
+    iscellList = iscellList.iscell;
     clear iscell
     fullPathMAT = fullfile(datadir, behaviorMAT.name); % Need to add the ability to add a-z labels, or we just presort each behavior h5 with the correct Ephys dir
 
@@ -30,9 +30,9 @@ function [] = Plot2P(varargin)
     times = h5read(fullPathH5, '/events/eventTime');
     codes = h5read(fullPathH5, '/events/eventCode');
     allTones = unique(tones);
-    allInts = unique(intensities);
+    allInts = unique(intensities); allInts = flip(allInts);
     % tones = tones(837:end);
-    % intensities = intensities(837:end); % +137 ignore this, manual coding to overcome TasKontrol appending data sessions
+    % intensities = intensities(837:end); % +137; ignore this, manual coding to overcome TasKontrol appending data sessions
 
     frames = info.frame;
     if ~(length(frames)/2 == length(tones))
@@ -77,8 +77,12 @@ function [] = Plot2P(varargin)
                         currRangeLog = currRange < 1;
                         currRange(currRangeLog) = 1;
                     end
-                    if ~isempty(normRange(normRange <= 0))
-                        normRange = normRange(normRange > 0);
+                    if ~isempty(currRange(currRange > frames(end)))
+                        currRangeLog = currRange > size(cellsToPlotCorr, 2);
+                        currRange(currRangeLog) = size(cellsToPlotCorr, 2);
+                    end
+                    if sum(normRange <= 0) == length(normRange)
+                        normRange = (currTimestamps(iTrial) + 21):(currTimestamps(iTrial) + 30);
                     end
                     currTrace = (cellsToPlotCorr(currCell, currRange) - mean(cellsToPlotCorr(currCell, normRange)))/mean(cellsToPlotCorr(currCell, normRange));
                     meanRange(iTrial, :) = currTrace;
@@ -90,13 +94,13 @@ function [] = Plot2P(varargin)
         subplot1(2,6, 'Min', [0.05, 0.05], 'Gap', [0.01, 0.01]);
         fig = gcf; orient(fig, 'landscape');
         axes(fig, 'Position', [0.05, 0.05, 0.9, 0.9])
-        title(sprintf('ROI %s Tuning Curve', num2str(currCell))); 
-        xlabel('Time (in samples, 15.49 Hz)');
+        title(sprintf('ROI %s Tuning Curve', num2str(currCell)), 'Position', [0.5, 1.02]); 
+        text(0.5, -0.04, 'Time (in samples, 15.49 Hz)', 'HorizontalAlignment', 'center');
         axis off
         gcf;
 
         which_fig = 0;
-        for iInt = 1:length(flip(allInts))
+        for iInt = 1:length(allInts)
             for iTone = 1:length(timestamps)
                 which_fig = which_fig + 1;
                 if sum(isnan(meanRanges{iTone, iInt}), 'all') ~= 0
@@ -111,17 +115,17 @@ function [] = Plot2P(varargin)
                     ylabel('dF/F - 50 dbSPL');
                 end
                 if which_fig == 1
-                    xlabel('2000 Hz', 'Position', [0.3, 1])
+                    xlabel('2000 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
                 elseif which_fig == 2
-                    xlabel('3482 Hz')
+                    xlabel('3482 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
                 elseif which_fig == 3
-                    xlabel('6063 Hz')
+                    xlabel('6063 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
                 elseif which_fig == 4
-                    xlabel('10556 Hz')
+                    xlabel('10556 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
                 elseif which_fig == 5
-                    xlabel('18379 Hz')
+                    xlabel('18379 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
                 elseif which_fig == 6
-                    xlabel('32000 Hz')
+                    xlabel('32000 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
                 end
                 clear meanTrace
             end    
