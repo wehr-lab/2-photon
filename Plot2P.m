@@ -1,17 +1,22 @@
 function [] = Plot2P(varargin)
 
+    % Plot two-photon tuning curve data and print to a pdf
     % You can either pass the full path to your 2P datadir (on the NAS), or you can run as a script by entering your plot directory below
+    % Enter a directory and a cell number to plot (and NOT print) just that cell (NOT FINISHED YET SFM 12/17/24)
     
     if ~isempty(varargin)
-        datadir = varargin{1};
+        datadir = convertCharsToStrings(varargin{1});
     else
         datadir = '/Volumes/Projects/2P5XFAD/JarascopeData/wehr3133/12-12-24-000'; % enter directory to plot (if none explicitly passed)
     end
-    cd(datadir)
+    
+    if length(varargin) > 1
+        CellToPlot = varargin{2};
+    end
 
-    figdir = '/Users/sammehan/Documents/Wehr Lab/Alzheimers2P/Figs';
-    temp1 = strsplit(datadir, '/');
-    savename = fullfile(figdir, strcat(temp1{end-1}, '-', temp1{end}, '-TC.ps'));
+    figdir = '/Users/sammehan/Documents/Wehr Lab/Alzheimers2P/Figs'; % where would you like to save these tuning curves?
+    filepathparts = strsplit(datadir, '/'); mouseID = filepathparts{6}; sessionID = filepathparts{end};
+    savename = fullfile(figdir, strcat(filepathparts{end-1}, '-', filepathparts{end}, '-TC.ps'));
 
     behaviorMAT = dir('wehr*.mat');
     load(behaviorMAT.name)
@@ -23,8 +28,29 @@ function [] = Plot2P(varargin)
     fullPathMAT = fullfile(datadir, behaviorMAT.name); % Need to add the ability to add a-z labels, or we just presort each behavior h5 with the correct Ephys dir
 
     behaviorH5 = dir('wehr*.h5');
-    fullPathH5 = fullfile(datadir, behaviorH5.name);
-
+    if isempty(behaviorH5)
+        if exist(fullfile('/Volumes/Projects/2P5XFAD/JarascopeData/behavior/', mouseID), 'dir')
+            dateparts = strsplit(filepathparts{end}, '-'); month = dateparts{1}; day = dateparts{2}; year = strcat('20', dateparts{end});
+            behaviorfiles = dir(fullfile('/Volumes/Projects/2P5XFAD/JarascopeData/behavior/', mouseID, strcat(mouseID, '_am_tuning_curve_', year, month, day, '_', sessionID)));
+            if isempty(behaviorfiles)
+                behaviorfiles = dir(fullfile('/Volumes/Projects/2P5XFAD/JarascopeData/behavior/', mouseID, strcat(mouseID, '_am_tuning_curve_', year, month, day)));
+                if length(behaviorfiles) > 1
+                    error('Multiple behavior files are associated with this mouse and date, check with Sam (or the experimenter) what behavior file is correct')
+                elseif isempty(behaviorfiles)
+                    error("Can't find behavior file for this day, confirm that you ran 'sh copy_wehr_data_to_nas.sh' in the terminal on the two-photon behavior (Linux) computer to sync to the NAS")
+                else
+                    fullPathH5 = fullfile(behaviorfiles.folder, behaviorfiles.name);
+                end
+            else
+                fullPathH5 = fullfile(behaviorfiles.folder, behaviorfiles.name);
+            end
+        else
+            error("Can't find ANY behavior files associated with this mouse, confirm that you ran 'sh copy_wehr_data_to_nas.sh' in the terminal on the two-photon behavior (Linux) computer to sync to the NAS")
+        end
+    else
+        fullPathH5 = fullfile(datadir, behaviorH5.name);
+    end
+    
     tones = h5read(fullPathH5, '/resultsData/currentFreq');
     intensities = h5read(fullPathH5, '/resultsData/currentIntensity');
     times = h5read(fullPathH5, '/events/eventTime');
@@ -62,8 +88,10 @@ function [] = Plot2P(varargin)
     cellsToPlotCorr = cellsToPlot - (neucellsToPlot * corrScalar);
     cellsMean = mean(cellsToPlot, 2);
 
-    for iCell = 1:size(cellsToPlotCorr, 1)
-        currCell = iCell;
+    for currCell = 1:size(cellsToPlotCorr, 1)
+        if ~isempty(CellToPlot)
+            currCell = CellToPlot;
+        end
         for iTone = 1:length(timestamps)
             for iInt = 1:length(allInts)
                 currTimestamps = timestamps{iTone, iInt};
@@ -130,9 +158,14 @@ function [] = Plot2P(varargin)
                 clear meanTrace
             end    
         end
-        print(savename, '-dpsc2', '-append', '-bestfit');
-        sprintf('On Cell %d / %d \n', currCell, size(cellsToPlotCorr, 1))
+        if length(varargin) < 1
+            print(savename, '-dpsc2', '-append', '-bestfit');
+            sprintf('On Cell %d / %d \n', currCell, size(cellsToPlotCorr, 1))
+        end
         clear meanRange meanRanges normRange currTrace
         close all
+        
+        if exist('CellToPlot', 'var')
+            break
+        end
     end
-
