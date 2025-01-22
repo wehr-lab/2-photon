@@ -1,0 +1,6 @@
+This file notes the general direction to load .mat files in Python.
+.mat files are MATLAB files that store data in a structured format. While parsing these files in Python, it is often tricky to get the data in the desired format. Therefore, this file notes the general direction to load .mat files in Python.
+
+## Steps to load .mat files in Python
+1. Install the `scipy` library.
+2. Import the `scipy.io` module. This has sio.loadmat() function to load .mat files.
