@@ -4,3 +4,23 @@ This file notes the general direction to load .mat files in Python.
 ## Steps to load .mat files in Python
 1. Install the `scipy` library.
 2. Import the `scipy.io` module. This has sio.loadmat() function to load .mat files.
+3. Use the `sio.loadmat()` function to load the .mat file. Use `struct_as_record=True` to load the file as numpy record arrays. This allows indexing the data using the dot notation.
+
+Numpy record arrays look like this:
+a = np.array([(1.0, 2), (3.0, 4)], dtype=[('x', 'f4'), ('y', 'i4')])
+
+Here, the array is a collection of tuples, where each tuple object has two elements. The first element is a float and the second element is an integer. The dtype parameter specifies the data type of each element in the tuple.
+
+Example:
+`behavior.mat` file has the following data:
+When loaded using `sio.loadmat('behavior.mat', struct_as_record=True)`, the data can be accessed as:
+`data = sio.loadmat('behavior.mat', struct_as_record=True)`
+Its keys are:
+1. Head
+2. Reye
+3. Sky 
+
+All of the keys have values that are numpy record arrays. The data can be accessed using the dot notation:
+
+
+Also, I have written the `extract_value` function that extracts the 0th-most element from the numpy record array. This function can be used to extract the data from the numpy record arrays.
