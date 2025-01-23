@@ -20,7 +20,11 @@ Its keys are:
 2. Reye
 3. Sky 
 
-All of the keys have values that are numpy record arrays. The data can be accessed using the dot notation:
-
+All of the keys have values that are numpy record arrays. The data can be accessed using the dot notation.
+All these fields are numpy record arrays. To view the names of the fields, use: `data.dtype.names`. 
 
 Also, I have written the `extract_value` function that extracts the 0th-most element from the numpy record array. This function can be used to extract the data from the numpy record arrays.
+
+Events class: This class is used to store the data from 1 trial in the Events.mat file. Its attributes are the fields of the events record array. 
+
+Maybe: Experiment class: Collection of Events objects. 
