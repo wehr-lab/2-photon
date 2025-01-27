@@ -14,6 +14,9 @@ def extract_value(arr, fieldname=None):
         else:
             return None  # Handle unsupported type
 
+    if fieldname == 'PupilDiameter':
+        return arr[0][0][:, 0] ## I was lazy to write a proper function. This is a temporary solution 
+
     while True:
         ## check if the current item is a NumPy array or a list
         if isinstance(arr, (np.ndarray, list)):
