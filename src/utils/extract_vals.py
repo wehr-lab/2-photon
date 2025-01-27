@@ -1,11 +1,19 @@
 import numpy as np 
 
-def extract_value(arr):
+def extract_value(arr, fieldname=None):
     '''Only run this function after importing numpy as np. 
     
     input: arr, a numpy array or list
     output: the very first value from the array or list i.e. arr[0][0]...
     '''
+    if fieldname == 'spiketimes':
+        if isinstance(arr, np.ndarray):
+            return arr.tolist()[0]  # Convert NumPy array to list
+        elif isinstance(arr, list):
+            return arr  # Return the list as is
+        else:
+            return None  # Handle unsupported type
+
     while True:
         ## check if the current item is a NumPy array or a list
         if isinstance(arr, (np.ndarray, list)):
