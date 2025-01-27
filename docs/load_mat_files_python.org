@@ -27,9 +27,6 @@ Also, I have written the `extract_value` function that extracts the 0th-most ele
 
 Events class: This class is used to store the data from 1 trial in the Events.mat file. Its attributes are the fields of the events record array. 
 
-Maybe: Experiment class: Collection of Events objects. 
+Maybe: Session class: Collection of Events objects. 
 Add: Cell class for SortedUnits. 
-TODO: 
-
-
-Maybe: Session class: Collection of Events class? 
+Add: CellEnsemble class for the collection of Cell objects in one session. I am thinking of creating a DataFrame object for the CellEnsemble class. I can add CellEnsemble.createDataFrame(instance1) method to create DataFrame if need be.

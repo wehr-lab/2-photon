@@ -8,7 +8,7 @@ def extract_value(arr, fieldname=None):
     '''
     if fieldname == 'spiketimes':
         if isinstance(arr, np.ndarray):
-            return arr.tolist()[0]  # Convert NumPy array to list
+            return np.array(arr[0])
         elif isinstance(arr, list):
             return arr  # Return the list as is
         else:
