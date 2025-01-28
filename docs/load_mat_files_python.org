@@ -34,3 +34,6 @@ Add: CellEnsemble class for the collection of Cell objects in one session. I am 
 Finally: Behavior class for all the behavior files. 
 For now, only add the Reye.PupilDiameter field. 
 Maybe: rewrite the extract_value function to take the data and the field name as arguments. This way, I can use the function to extract data from any field in the numpy record array. Some of the fields require the whole array to be extracted, while some require only the 0th element to be extracted.
+
+
+TODO: try to implement the all of the spike stimuli pupil aligned .m file in python. 

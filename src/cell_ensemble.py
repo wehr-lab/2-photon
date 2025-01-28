@@ -2,10 +2,14 @@ import pandas as pd
 import numpy as np
 from cell import Cell
 
-class CellEnsemble():
-    
-    def __init__(self):
-        self.cells = []
+class CellEnsemble:
+
+    '''Here cells is a list of Cell objects''' 
+    def __init__(self, cells=None):
+        if cells is None:
+            self.cells = []
+        else:
+            self.cells = cells
 
     def add_cell(self, cell):
         if isinstance(cell, Cell):
@@ -25,10 +29,10 @@ class CellEnsemble():
     def __repr__(self):
         return f'CellEnsemble with {len(self)} cells'
     
-    # def toDataFrame(self):
-    #     data = {field: [] for field in self.cells[0].fields}
-    #     for cell in self.cells:
-    #         for field in cell.fields:
-    #             data[field].append(getattr(cell, field))
-    #     return pd.DataFrame(data)         
+    def toDataFrame(self):
+        data = {field: [] for field in self.cells[0].fields}
+        for cell in self.cells:
+            for field in cell.fields:
+                data[field].append(getattr(cell, field))
+        return pd.DataFrame(data)         
 

@@ -4,8 +4,11 @@ from events import Events
 
 class Session:
 
-    def __init__(self):
-        self.events = []
+    def __init__(self, events=None):
+        if events is None:
+            self.events = []
+        else:
+            self.events = events
 
     def add_event(self, event):
         if isinstance(event, Events):

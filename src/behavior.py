@@ -15,3 +15,14 @@ class Behavior:
         self.sky = behaviorFile["Sky"]
         self.pupilDiameter = extract_value(self.reye["PupilDiameter"], 'PupilDiameter') ## this is too hardcoded. will change it later 
         
+    def get_head_data(self):
+        return self.head
+    
+    def get_reye_data(self):
+        return self.reye
+    
+    def get_sky_data(self):
+        return self.sky
+    
+    def get_pupilDiameter_data(self):
+        return self.pupilDiameter
