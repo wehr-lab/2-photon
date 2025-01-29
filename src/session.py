@@ -17,11 +17,10 @@ class Session:
             raise ValueError('Input should be an instance of the Events class.')
     
     def get_event(self, index):
-        for event in self.events:
-            if event.index == index:
-                return event
-            else:
-                raise ValueError('Event not found.')    
+        if len(self.events) < index or index < 0:
+                raise ValueError('Index out of range.')
+        else:
+            return self.events[index]
 
     def __len__(self):
         return len(self.events)
