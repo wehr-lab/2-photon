@@ -19,7 +19,7 @@ class CellEnsemble:
         
     def get_cell(self, cellnum):
         for cell in self.cells:
-            if cell.cellnum == cellnum:
+            if cell.cellnum == cellnum + 1: ## had to to this because matlab starts at 1 and python at 0
                 return cell
         return None
     

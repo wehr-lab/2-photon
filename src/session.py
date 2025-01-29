@@ -17,7 +17,7 @@ class Session:
             raise ValueError('Input should be an instance of the Events class.')
     
     def get_event(self, index):
-        if len(self.events) < index or index < 0:
+        if len(self.events) < np.abs(index): 
                 raise ValueError('Index out of range.')
         else:
             return self.events[index]

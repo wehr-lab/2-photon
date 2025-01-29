@@ -82,9 +82,9 @@ ms = 1e3 ## convert time in seconds to milliseconds
 timeWindow = [-500, 500] ## time window in milliseconds to extract spikes around the stimulus onset
 
 ## define the frame numbers when the first and last stimuli were presented 
-eventFrameNums = reyeFile["TTs"][0][0][0] ## frame numbers when the stimuli were presented
-firstEventFrame = eventFrameNums[0] ## first frame number when the first stimulus was presented
-lastEventFrame = eventFrameNums[-1] ## last frame number when the last stimulus was presented
+sessionFrameNums = reyeFile["TTs"][0][0][0] ## frame numbers when the stimuli were presented
+firstEventFrame = sessionFrameNums[0] ## first frame number when the first stimulus was presented
+lastEventFrame = sessionFrameNums[-1] ## last frame number when the last stimulus was presented
 
 ## extract the time for OpenEphys for the first and last stimulus presentation
 OEFirstEventTime = session.get_event(0).soundcard_trigger_timestamp_sec ## OE time in seconds when the first stimulus was presented
@@ -107,19 +107,19 @@ for trial in range(len(session)):
         ## now store all the event specific information in the EventsProcess object
         currEvent = EventsProcess(session.get_event(trial)) ## initialize with the Events object
         if not strcmp(session.get_event(trial).type, 'tone'):
-            currEvent.frequency = np.nan 
+            currEvent.event.frequency = np.nan 
         
         ## event (trial) specific start and stop times 
         currEvent.OEStartTime = np.ceil(eventStartTime + timeWindow[0]) ## start time in milliseconds
         currEvent.OEEndTime = np.ceil(eventStartTime + timeWindow[1])
         currEvent.freqStart = np.ceil(eventStartTime) ## start time in of stimulus in milliseconds
-        currEvent.freqEnd = np.ceil(currEvent.freqStart + currEvent.duration) ## end time of stimulus in milliseconds; note that the duration is already in milliseconds
+        currEvent.freqEnd = np.ceil(currEvent.freqStart + currEvent.event.duration) ## end time of stimulus in milliseconds; note that the duration is already in milliseconds
 
         ## find the frame number for the start and end time of the stimulus
         currEvent.frameRate = extract_value(reyeFile['vid'][0][0]['framerate']) ## lots of nesting, but checked and its correct
         frameRateInMs = (1/ms) * currEvent.frameRate ## frame rate in milliseconds
-        currEvent.firstFrame = np.ceil(eventFrameNums[trial] + timeWindow[0] * frameRateInMs) ## frame number for the start time of the stimulus
-        currEvent.lastFrame = np.ceil(eventFrameNums[trial] + timeWindow[1] * frameRateInMs)
+        currEvent.firstFrame = np.int32(np.ceil(sessionFrameNums[trial] + timeWindow[0] * frameRateInMs)) ## frame number for the start time of the stimulus
+        currEvent.lastFrame = np.int32(np.ceil(sessionFrameNums[trial] + timeWindow[1] * frameRateInMs))
 
         ## extracting the spiketimes now 
         for cellNum in range(len(cellEnsemble)):
@@ -127,4 +127,20 @@ for trial in range(len(session)):
             currEvent.spikeTimes.append(currCell.spiketimes[(currCell.spiketimes >= currEvent.OEStartTime) & (currCell.spiketimes <= currEvent.OEEndTime)]) ## extract the spike times within the time window for each cell and append
 
         ## extract the pupil diameter for the event
-        currEvent.pupilDiameter = pass 
+        currEvent.pupilDiameter = [pupilDiameter[currEvent.firstFrame:currEvent.lastFrame]] ## extract the pupil diameter for the event
+
+        ## time of frames 
+        currEvent.frameNums = np.arange(currEvent.firstFrame, currEvent.lastFrame + 1) ## frame numbers for the event
+        currEvent.frameTimes = np.int32(np.ceil((currEvent.frameNums - intercept) / slope)) ## convert frame numbers to OE time in milliseconds 
+
+        ## store timeWindow and frameWindow
+        currEvent.timeWindow = timeWindow
+        currEvent.frameWindow = [currEvent.firstFrame, currEvent.lastFrame]
+
+        ## append the currEvent to the eventsProcess list
+        eventsProcess.append(currEvent)
+
+
+
+
+
