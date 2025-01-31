@@ -4,6 +4,7 @@ import sys
 import glob 
 import numpy as np 
 import scipy.io as sio
+import matplotlib.pyplot as plt
 
 ## add path to custom libraries -> can directly import the libraries, no need to add path 
 from utils.extract_vals import extract_value 
@@ -66,8 +67,6 @@ pupilDiameter = behaviorFile.get_pupilDiameter_data()
 cellEnsembleDF = cellEnsemble.toDataFrame()
 
 ## for sanity check let's plot the spike raster for all the cells 
-# import matplotlib.pyplot as plt
-
 # fig, ax = plt.subplots(1, 1, figsize=(10, 10))
 # for cellnum, cellSpike in zip(cellEnsembleDF["cellnum"], cellEnsembleDF["spiketimes"]):
 #     y = np.ones_like(cellSpike) * cellnum
@@ -130,7 +129,7 @@ for trial in range(len(session)):
             currEvent.spikeTimes.append(currCell.spiketimes[(currCell.spiketimes >= currEvent.OEStartTime/ms) & (currCell.spiketimes <= currEvent.OEEndTime/ms)]) ## extract the spike times within the time window for each cell and append
 
         ## extract the pupil diameter for the event
-        currEvent.pupilDiameter = [pupilDiameter[currEvent.firstFrame:currEvent.lastFrame]] ## extract the pupil diameter for the event
+        currEvent.pupilDiameter = pupilDiameter[currEvent.firstFrame:currEvent.lastFrame] ## extract the pupil diameter for the event -> note that this returns an array itself
 
         ## time of frames 
         currEvent.frameNums = np.arange(currEvent.firstFrame, currEvent.lastFrame + 1) ## frame numbers for the event
@@ -171,9 +170,9 @@ for trial in range(len(eventsProcess)): ## i'm calling trial instead of event be
     frameTimeDiff = np.max(np.diff(currentEvent.frameTimes)) ## this is the time difference between the frames in milliseconds
     for frameID in range(len(currentEvent.pupilDiameter)):
         frameTime = currentEvent.frameTimes[frameID] ## the time of the frame in milliseconds))
-        frameColStart = np.int32(frameTime - universalStartTime) ## start column for the frame
+        frameColStart = np.int32(frameTime - universalStartTime) + 1 ## start column for the frame -> somehow the universalStartTime is 1 ms ahead of the first frame time
         frameColEnd = np.int32(frameColStart + frameTimeDiff) ## end column for the frame assuming the pupil diameter is constant for the duration of the frame -> approximating now 
-        dataMatrix[-2, frameColStart:frameColEnd] = currentEvent.pupilDiameter[frameID] ## insert the pupil diameter in the matrix
+        dataMatrix[1, frameColStart:frameColEnd] = currentEvent.pupilDiameter[frameID] ## insert the pupil diameter in the matrix
 
     ## now update the matrix with the spiketimes 
     for cellNum in range(len(cellEnsemble)):
@@ -182,13 +181,28 @@ for trial in range(len(eventsProcess)): ## i'm calling trial instead of event be
         dataMatrix[cellNum + 2, spikeCol] = 1 ## this one represents the spike at that particular ms
 
 
-import matplotlib.pyplot as plt
-fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+# fig, ax = plt.subplots(1, 1, figsize=(10, 10))
 
-ax.imshow(dataMatrix[2:, :], aspect='auto', cmap='binary', interpolation='none')
-ax.set_xlabel('Time (s)')
-ax.set_ylabel('Cell Number')
-plt.show()
+## plot the spikes 
+# for cellnum in range(dataMatrix[2:].shape[0]):
+#     x = np.arange(dataMatrix.shape[1])
+#     y = dataMatrix[cellnum + 2] * cellnum 
+#     ax.plot(x, y, 'k.', markersize=1)
 
-## save the dataMatrix as a .npy file 
-# np.save(os.path.join(BONSAI_DIR_PATH, "dataMatrix.npy"), dataMatrix)
+## plot the pupil diameter
+## convert nans to zeros for pupil diameter
+# pupilCopy = np.copy(dataMatrix[1])
+# pupilCopy[np.isnan(pupilCopy)] = 0
+# ax.plot(pupilCopy, 'r', markersize=1)
+
+## plot the stimuli
+# stimuli = dataMatrix[0].copy()
+# stimuli[np.isnan(stimuli)] = 0
+# ax.plot(stimuli[0:100000], 'b', markersize=1)
+
+# ax.set_xlabel('Time (s)')
+# ax.set_ylabel('Cell Number')
+# plt.show()
+
+# save the dataMatrix as a .npy file 
+np.save(os.path.join(BONSAI_DIR_PATH, "dataMatrix.npy"), dataMatrix)

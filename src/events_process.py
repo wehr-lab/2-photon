@@ -19,7 +19,7 @@ class EventsProcess():
         self.lastFrame = None
         self.frameRate = None
         self.spikeTimes = []
-        self.pupilDiameter = []
+        self.pupilDiameter = None 
         self.frameNums = []
         self.frameTimes = []
         self.timeWindow = None 
