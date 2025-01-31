@@ -38,3 +38,7 @@ Maybe: rewrite the extract_value function to take the data and the field name as
 
 TODO: try to implement the all of the spike stimuli pupil aligned .m file in python. 
 TODO: generalize the extract_value function. 
+
+
+## num of spikes within a bin
+If we see >1 spike in a ms bin, not physiologically plausible. Check for this in the code. 

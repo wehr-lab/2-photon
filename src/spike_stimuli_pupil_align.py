@@ -110,9 +110,12 @@ for trial in range(len(session)):
             currEvent.event.frequency = np.nan 
         
         ## event (trial) specific start and stop times 
-        currEvent.OEStartTime = np.ceil(eventStartTime + timeWindow[0]) ## start time in milliseconds
-        currEvent.OEEndTime = np.ceil(eventStartTime + timeWindow[1])
-        currEvent.freqStart = np.ceil(eventStartTime) ## start time in of stimulus in milliseconds
+        currEvent.OEStartTime = np.int32(np.ceil(eventStartTime + timeWindow[0])) ## start time in milliseconds
+        currEvent.OEEndTime = np.int32(np.ceil(eventStartTime + timeWindow[1]))
+        currEvent.freqStart = np.int32(np.ceil(eventStartTime)) ## start time in of stimulus in milliseconds
+
+        ##TODO check if np.ceil is the right function to use here
+
         currEvent.freqEnd = np.ceil(currEvent.freqStart + currEvent.event.duration) ## end time of stimulus in milliseconds; note that the duration is already in milliseconds
 
         ## find the frame number for the start and end time of the stimulus
@@ -124,14 +127,14 @@ for trial in range(len(session)):
         ## extracting the spiketimes now 
         for cellNum in range(len(cellEnsemble)):
             currCell = cellEnsemble.get_cell(cellNum)
-            currEvent.spikeTimes.append(currCell.spiketimes[(currCell.spiketimes >= currEvent.OEStartTime) & (currCell.spiketimes <= currEvent.OEEndTime)]) ## extract the spike times within the time window for each cell and append
+            currEvent.spikeTimes.append(currCell.spiketimes[(currCell.spiketimes >= currEvent.OEStartTime/ms) & (currCell.spiketimes <= currEvent.OEEndTime/ms)]) ## extract the spike times within the time window for each cell and append
 
         ## extract the pupil diameter for the event
         currEvent.pupilDiameter = [pupilDiameter[currEvent.firstFrame:currEvent.lastFrame]] ## extract the pupil diameter for the event
 
         ## time of frames 
         currEvent.frameNums = np.arange(currEvent.firstFrame, currEvent.lastFrame + 1) ## frame numbers for the event
-        currEvent.frameTimes = np.int32(np.ceil((currEvent.frameNums - intercept) / slope)) ## convert frame numbers to OE time in milliseconds 
+        currEvent.frameTimes = np.int32(((currEvent.frameNums - intercept) / slope) * ms) ## convert frame numbers to OE time in milliseconds 
 
         ## store timeWindow and frameWindow
         currEvent.timeWindow = timeWindow
@@ -141,6 +144,51 @@ for trial in range(len(session)):
         eventsProcess.append(currEvent)
 
 
+## define the universal start and end times for the entire 30 min session 
+universalStartTime = np.int32(eventsProcess[0].OEStartTime) ## start time in milliseconds
+universalEndTime = np.int32(eventsProcess[-1].OEEndTime) ## end time in milliseconds
+
+## construct an empty matrix to store the pupil diameter, stimuli, and the spike times for all the cells
+matRows = len(cellEnsemble) + 2 ## number of rows in the matrix; +2 for pupil diameter and stimuli
+matCols = universalEndTime - universalStartTime ## number of columns in the matrix
+dataMatrix = np.zeros((matRows, matCols))
+
+## construct the matrix 
+for trial in range(len(eventsProcess)): ## i'm calling trial instead of event because events are already defined elsewhere 
+    currentEvent = eventsProcess[trial]
+
+    currentStartTime = currentEvent.OEStartTime
+    currentEndTime = currentEvent.OEEndTime
+
+    ## convert the start and stop times to columns in the matrix 
+    currentStartCol = np.int32(currentStartTime - universalStartTime)
+    currentEndCol = np.int32(currentEndTime - universalStartTime)
+
+    ## insert frequency of the stimulus in the matrix
+    dataMatrix[0, currentStartCol:currentEndCol] = currentEvent.event.frequency
+
+    ## insert the pupil diameter in the matrix
+    frameTimeDiff = np.max(np.diff(currentEvent.frameTimes)) ## this is the time difference between the frames in milliseconds
+    for frameID in range(len(currentEvent.pupilDiameter)):
+        frameTime = currentEvent.frameTimes[frameID] ## the time of the frame in milliseconds))
+        frameColStart = np.int32(frameTime - universalStartTime) ## start column for the frame
+        frameColEnd = np.int32(frameColStart + frameTimeDiff) ## end column for the frame assuming the pupil diameter is constant for the duration of the frame -> approximating now 
+        dataMatrix[-2, frameColStart:frameColEnd] = currentEvent.pupilDiameter[frameID] ## insert the pupil diameter in the matrix
+
+    ## now update the matrix with the spiketimes 
+    for cellNum in range(len(cellEnsemble)):
+        currSpikeTimes = np.int32((currentEvent.spikeTimes[cellNum]) * ms) ## extract the spike times for the current cell  
+        spikeCol = currSpikeTimes - universalStartTime ## convert the spike times to columns in the matrix
+        dataMatrix[cellNum + 2, spikeCol] = 1 ## this one represents the spike at that particular ms
 
 
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots(1, 1, figsize=(10, 10))
 
+ax.imshow(dataMatrix[2:, :], aspect='auto', cmap='binary', interpolation='none')
+ax.set_xlabel('Time (s)')
+ax.set_ylabel('Cell Number')
+plt.show()
+
+## save the dataMatrix as a .npy file 
+# np.save(os.path.join(BONSAI_DIR_PATH, "dataMatrix.npy"), dataMatrix)

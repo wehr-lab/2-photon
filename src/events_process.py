@@ -24,13 +24,3 @@ class EventsProcess():
         self.frameTimes = []
         self.timeWindow = None 
         self.frameWindow = None 
-
-    def toDataFrame(self):
-        data = {field: [] for field in self.fields}
-        for field in self.fields:
-            data[field].append(getattr(self, field))
-        return pd.DataFrame(data)
-    
-
-    def __repr__(self):
-        return f"EventsProcess({', '.join([f'{field}={getattr(self, field)}' for field in self.fields])}"
