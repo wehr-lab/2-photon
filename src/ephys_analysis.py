@@ -3,26 +3,63 @@ import os
 from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.ndimage import percentile_filter
 
-def roi_indices(iscell, prob=None):
-    """Return the indices of the ROIs that are cells."""
+
+def load2P(dataPath):
+    F = np.load(os.path.join(dataPath, "F.npy"), allow_pickle=True)
+    Fneu = np.load(os.path.join(dataPath, "Fneu.npy"), allow_pickle=True)
+    spks = np.load(os.path.join(dataPath, "spks.npy"), allow_pickle=True)
+    stat = np.load(os.path.join(dataPath, "stat.npy"), allow_pickle=True)
+    ops =  np.load(os.path.join(dataPath, "ops.npy"), allow_pickle=True)
+    ops = ops.item() ## converts ops to a dictionary
+    iscell = np.load(os.path.join(dataPath, "iscell.npy"), allow_pickle=True)
+    return F, Fneu, spks, stat, ops, iscell
+
+
+def extractCells(fTraces, iscell, prob=None):
+    """Return the ROIs that are cells."""
     if prob is not None:
-        return np.where(iscell[:, 1] >= prob)[0]
-    return np.where(iscell[:, 0] == 1)[0]
+        indices = np.where((iscell[:, 1] >= prob) & (iscell[:, 0] == 1))[0]
+    else:
+        indices = np.where(iscell[:, 0] == 1)[0]
+    return fTraces[indices]
 
-def extract_cells(data, indices):
-    """Extract the data for the specified cell indices."""
-    return data[indices]
 
 def correct_neuropil(cell_data, npil_data, npil_coeff=0.7):
     """Correct the neuropil contamination in the cell data using the neuropil data."""
     return cell_data - npil_coeff * npil_data
 
-def compute_dff(data, f0=None):
+
+def absFluoresce(data):
+    fCorrected = np.zeros(data.shape)
+    for ind in range(data.shape[0]): ## loop through the rois 
+        if np.min(data[ind, :]) <= 0:
+            fCorrected[ind, :] = data[ind, :] + np.abs(np.min(data[ind, :])) + 1
+        else:
+            fCorrected[ind, :] = data[ind, :] + 1
+    return fCorrected
+
+
+def computeDFF(data, f0=None):
     """Compute the dF/F for the data using the specified baseline."""
     if f0 is None:
         f0 = np.nanmean(data, axis=1)
     return (data - f0[:, np.newaxis]) / f0[:, np.newaxis]
+
+def computeDFFSlide(data, window=100, percentile=20):
+    """Compute the dF/F for the data using a sliding window."""
+    f0 = percentile_filter(data, percentile=percentile, size=(1, window), mode='wrap')
+
+    num_cells, num_frames = data.shape
+    dff = np.zeros(num_cells, num_frames) 
+
+    dff = (data - f0) / f0
+    ## trim for the first and last few time points because the f0 values are not accurate for those time points due to window effects
+    trim_size = window // 2
+    dff = dff[:, trim_size:-trim_size]
+    return dff
+
 
 ## define function to plot spikes
 def plot_spikes_subset(data, time_points=50, cell_indices=None, y_lim=None):
