@@ -7,18 +7,22 @@ import ephys_analysis
 import behavior_analysis
 
 ## define path variables -> note to make these paths genaralizable by doing sys.argv[]
-DATA_PATH = "/Volumes/Projects/2P5XFAD/JarascopeData/wehr2867/10-08-24-001/suite2p/plane0/" ## path to where the data is mounted; can also sys.argv[1]
+DATA_PATH = "/Volumes/Projects/2P5XFAD/JarascopeData/wehr3204/track2p/track2p/matched_suite2p" ## path to where the data is mounted; can also sys.argv[1]
 # DATA_PATH_SAVE = "/Users/praveslamichhane/Desktop/alzheimers/data/wehr2867"
 
+sessions = [d for d in os.listdir(DATA_PATH) if os.path.isdir(os.path.join(DATA_PATH, d))]
+pathChain = ["suite2p", "plane0"]
 
-sessions = [] ## list of paths to the data for different sessions
-dFFs = {}
-for session in sessions:
+sessionPaths = [os.path.join(DATA_PATH, session, *pathChain) for session in sessions]
+
+dFFs = {} ## this will store the dFF values for each session
+
+for session in sessionPaths:
     ## load data 
     F, Fneu, spks, stat, ops, iscell = ephys_analysis.load2P(session) 
 
-    fCells = ephys_analysis.extractCells(F, iscell, prob=0.8)
-    fneuCells = ephys_analysis.extractCells(Fneu, iscell, prob=0.8)
+    fCells = ephys_analysis.extractCells(F, iscell, prob=0)
+    fneuCells = ephys_analysis.extractCells(Fneu, iscell, prob=0)
 
     ## neuropil correction
     fCorrected = ephys_analysis.correct_neuropil(fCells, fneuCells, npil_coeff=0.7)
@@ -47,3 +51,4 @@ for session, dFF in dFFs.items():
     ## compute the correlation matrix
     fcMatrix[session] = np.corrcoef(dFF)
 
+## now stuff about the graph theory analysis

@@ -51,8 +51,8 @@ def computeDFFSlide(data, window=100, percentile=20):
     """Compute the dF/F for the data using a sliding window."""
     f0 = percentile_filter(data, percentile=percentile, size=(1, window), mode='wrap')
 
-    num_cells, num_frames = data.shape
-    dff = np.zeros(num_cells, num_frames) 
+    numCells, numFrames = data.shape
+    dff = np.zeros((numCells, numFrames))
 
     dff = (data - f0) / f0
     ## trim for the first and last few time points because the f0 values are not accurate for those time points due to window effects
