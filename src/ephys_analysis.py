@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import percentile_filter
+from scipy.ndimage import gaussian_filter1d
 
 
 def load2P(dataPath):
@@ -16,13 +17,16 @@ def load2P(dataPath):
     iscell = np.load(os.path.join(dataPath, "iscell.npy"), allow_pickle=True)
     return F, Fneu, spks, stat, ops, iscell
 
-
-def extractCells(fTraces, iscell, prob=None):
-    """Return the ROIs that are cells."""
+def getIndices(iscell, prob=None):
+    """Return the indices of the cells that are classified as cells."""
     if prob is not None:
         indices = np.where((iscell[:, 1] >= prob) & (iscell[:, 0] == 1))[0]
     else:
         indices = np.where(iscell[:, 0] == 1)[0]
+    return indices
+
+def extractCells(fTraces, indices):
+    """Return the ROIs that are cells."""
     return fTraces[indices]
 
 
@@ -59,6 +63,13 @@ def computeDFFSlide(data, window=100, percentile=20):
     trim_size = window // 2
     dff = dff[:, trim_size:-trim_size]
     return dff
+
+## convolve the spikes with a gaussian filter
+def convolve_spikes(spks, sigma=1):
+    convolved_spks = np.zeros(spks.shape)
+    for i in range(spks.shape[0]):
+        convolved_spks[i, :] = gaussian_filter1d(spks[i, :], sigma)
+    return convolved_spks
 
 
 ## define function to plot spikes
@@ -129,3 +140,8 @@ def subset_data(data, num_points):
         data_subset[i] = data[i][:num_points]
 
     return data_subset
+
+def binarize_matrix(matrix, threshold):
+    binary_matrix = np.zeros(matrix.shape)
+    binary_matrix[matrix >= threshold] = 1
+    return binary_matrix
