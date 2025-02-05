@@ -7,7 +7,9 @@ import behavior_analysis
 import seaborn as sns
 import igraph as ig
 
-sessionPaths = ["/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-17-25-002/suite2p/plane0", "/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-22-25-002/suite2p/plane0", "/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-30-25-002/suite2p/plane0"]
+# sessionPaths = ["/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-17-25-002/suite2p/plane0", "/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-22-25-002/suite2p/plane0", "/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-30-25-002/suite2p/plane0"]
+
+sessionPaths = ["/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-17-25-002/suite2p/plane0"]
 
 dFFs = {} ## this will store the dFF values for each session
 
@@ -52,8 +54,12 @@ for session, dFF in dFFs.items():
     fcMatrix[session] = np.corrcoef(dFF)
     print("Functional connectivity matrix computed for session: ", session)
 
-    ## binarize the correlation matrix
-    fcMatrixBin[session] = ephys_analysis.binarize_matrix(fcMatrix[session], threshold=0.1)
+    ## compute the 20th percentile of the correlation matrix
+    matToProcess = fcMatrix[session]
+    upperTriangular = matToProcess[np.triu_indices_from(matToProcess, k=1)] 
+    thresholdPercentile = np.percentile(upperTriangular.flatten(), 60) 
+    ## binarize the correlation matrix at the threshold percentile 
+    fcMatrixBin[session] = ephys_analysis.binarize_matrix(matToProcess, threshold=thresholdPercentile)
     ## remove autocorrelations
     np.fill_diagonal(fcMatrixBin[session], 0)
 
@@ -66,5 +72,9 @@ for i, (session, fc) in enumerate(fcMatrixBin.items()):
 
 
 ## now stuff about the graph theory analysis -> I am using the igraph library for this
+
+## create a graph object from the functional connectivity matrix
+graphs = [ig.Graph.Adjacency(fcMatrixBin[session].tolist()) for session in sessionPaths]
+
 
 
