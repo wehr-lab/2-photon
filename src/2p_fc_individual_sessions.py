@@ -76,5 +76,22 @@ for i, (session, fc) in enumerate(fcMatrixBin.items()):
 ## create a graph object from the functional connectivity matrix
 graphs = [ig.Graph.Adjacency(fcMatrixBin[session].tolist()) for session in sessionPaths]
 
+graphMatrics = {}
+
+for i, graph in enumerate(graphs):
+    ## compute the degree of each node
+    storeDict = {}
+    storeDict["degree"] = graph.degree()
+    ## compute the clustering coefficient of each node
+    storeDict["clustering"] = graph.transitivity_local_undirected()
+    ## compute the betweenness centrality of each node
+    storeDict["betweenness"] = graph.betweenness()
+    ## compute the eigenvector centrality of each node
+    storeDict["eigenvector"] = graph.eigenvector_centrality()
+    storeDict["path_length"] = graph.average_path_length()
+    graphMatrics[i] = storeDict
+
+
+
 
 
