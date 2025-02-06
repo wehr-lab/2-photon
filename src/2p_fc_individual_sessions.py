@@ -66,10 +66,12 @@ for session, dFF in dFFs.items():
 ## plot the functional connectivity matrices
 # fig, axs = plt.subplots(1, 3, figsize=(15, 5))
 for i, (session, fc) in enumerate(fcMatrixBin.items()):
-    g = sns.clustermap(fc, method="ward", cmap="coolwarm", square=True,  xticklabels=False, yticklabels=False, cbar=False, dendrogram_ratio=(0.1, 0.1))
+    g = sns.clustermap(fc, method="ward", cmap="coolwarm", square=True,  xticklabels=False, yticklabels=False, cbar=True, dendrogram_ratio=(0.1, 0.1), col_cluster=True, row_cluster=True)
+    # if g.cax is not None: ## decided to include the colorbar
+    #     g.cax.set_visible(False)
     g.ax_row_dendrogram.set_visible(False)
     g.ax_col_dendrogram.set_visible(False)
-    g.ax_heatmap.set_title(f"Clustering of pairwise correlation matrix for {session.split('/')[-3]}, Cells={fc.shape[0]}", loc='center', y=1.2, pad=2, fontsize=15, fontweight='bold')
+    g.ax_heatmap.set_title(f"Clustering of pairwise correlation matrix for {session.split('/')[-3]}, Cells={fc.shape[0]}", y=1.05, fontsize=15, fontweight='bold')
     plt.show()
 
 
