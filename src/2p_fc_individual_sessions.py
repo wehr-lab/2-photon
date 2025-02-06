@@ -92,6 +92,18 @@ for i, graph in enumerate(graphs):
     graphMatrics[i] = storeDict
 
 
+## plot all the graph metrics
+degrees = [graphMatrics[i]["degree"] for i in range(len(graphMatrics))]
+clusterings = [graphMatrics[i]["clustering"] for i in range(len(graphMatrics))]
+pathLengths = [graphMatrics[i]["path_length"] for i in range(len(graphMatrics))]
 
+fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+axs[0].boxplot(degrees)
+axs[0].set_title("Degree")
+axs[1].boxplot(clusterings)
+axs[1].set_title("Clustering")
+axs[2].boxplot(pathLengths)
+axs[2].set_title("Path Length")
+plt.show()
 
 

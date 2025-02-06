@@ -1,0 +1,14 @@
+Analyses done on 2p data
+1. Preprocessing after Suite2p:
+1.1 dF/F computed 
+1.2 Static FC computed from pairwise correlations
+1.3 Thresholded at some percentile of the distribution of FC values
+
+2. Analysis of static FC:
+2.1 Hierarchical Clustering of static FC
+2.2 Computed some graph metrics on threshold graph 
+
+
+TODO
+1. Dynamic FC analysis
+2. Compare FC metrics of the graph with randomized graph 
