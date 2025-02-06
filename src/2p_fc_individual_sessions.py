@@ -7,9 +7,9 @@ import behavior_analysis
 import seaborn as sns
 import igraph as ig
 
-# sessionPaths = ["/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-17-25-002/suite2p/plane0", "/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-22-25-002/suite2p/plane0", "/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-30-25-002/suite2p/plane0"]
+sessionPaths = ["/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-17-25-002/suite2p/plane0", "/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-22-25-002/suite2p/plane0", "/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-30-25-002/suite2p/plane0"]
 
-sessionPaths = ["/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-17-25-002/suite2p/plane0"]
+# sessionPaths = ["/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-17-25-002/suite2p/plane0"]
 
 dFFs = {} ## this will store the dFF values for each session
 
@@ -66,8 +66,11 @@ for session, dFF in dFFs.items():
 ## plot the functional connectivity matrices
 # fig, axs = plt.subplots(1, 3, figsize=(15, 5))
 for i, (session, fc) in enumerate(fcMatrixBin.items()):
-    sns.clustermap(fc, method="ward", cmap="coolwarm", square=True,  xticklabels=False, yticklabels=False)
-    plt.title(session.split("/")[-3])
+    g = sns.clustermap(fc, method="ward", cmap="coolwarm", square=True,  xticklabels=False, yticklabels=False, cbar=False, dendrogram_ratio=(0.1, 0.1))
+    g.ax_row_dendrogram.set_visible(False)
+    g.ax_col_dendrogram.set_visible(False)
+    g.ax_heatmap.set_title(f"Clustering of pairwise correlation matrix for {session.split('/')[-3]}, Cells={fc.shape[0]}", loc='center', y=1.2, pad=2, fontsize=15, fontweight='bold')
+    plt.show()
 
 
 
@@ -93,17 +96,20 @@ for i, graph in enumerate(graphs):
 
 
 ## plot all the graph metrics
-degrees = [graphMatrics[i]["degree"] for i in range(len(graphMatrics))]
-clusterings = [graphMatrics[i]["clustering"] for i in range(len(graphMatrics))]
-pathLengths = [graphMatrics[i]["path_length"] for i in range(len(graphMatrics))]
+degrees = [np.nan_to_num(np.array(graphMatrics[i]["degree"])) for i in range(len(graphMatrics))]
+clusterings = [np.nan_to_num(np.array(graphMatrics[i]["clustering"])) for i in range(len(graphMatrics))]
+pathLengths = [np.nan_to_num(np.array(graphMatrics[i]["path_length"])) for i in range(len(graphMatrics))]
 
 fig, axs = plt.subplots(1, 3, figsize=(15, 5))
 axs[0].boxplot(degrees)
+axs[0].set_xticklabels(["Session 1", "Session 2", "Session 3"]) 
 axs[0].set_title("Degree")
 axs[1].boxplot(clusterings)
+axs[1].set_xticklabels(["Session 1", "Session 2", "Session 3"]) 
 axs[1].set_title("Clustering")
-axs[2].boxplot(pathLengths)
+axs[2].bar([1, 2, 3], pathLengths, tick_label=["Session 1", "Session 2", "Session 3"])
 axs[2].set_title("Path Length")
+fig.suptitle("Graph Metrics for the recording sessions")
 plt.show()
 
 
