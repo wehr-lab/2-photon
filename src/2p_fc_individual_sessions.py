@@ -79,7 +79,10 @@ for i, (session, fc) in enumerate(fcMatrixBin.items()):
 ## now stuff about the graph theory analysis -> I am using the igraph library for this
 
 ## create a graph object from the functional connectivity matrix
-graphs = [ig.Graph.Adjacency(fcMatrixBin[session].tolist()) for session in sessionPaths]
+graphs = [ig.Graph.Adjacency(fcMatrixBin[session], mode='undirected') for session in sessionPaths]
+
+graphs = [graph.simplify(loops=True, multiple=False) for graph in graphs]
+
 
 graphMatrics = {}
 

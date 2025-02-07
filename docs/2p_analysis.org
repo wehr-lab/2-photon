@@ -12,3 +12,4 @@ Analyses done on 2p data
 TODO
 1. Dynamic FC analysis
 2. Compare FC metrics of the graph with randomized graph 
+3. Need to change the binarize matrix to first abs the matrix and then binarize it. Otherwise, we will lose the negative correlations that could be part of a module. 
