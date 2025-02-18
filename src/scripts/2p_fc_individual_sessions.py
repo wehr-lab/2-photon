@@ -2,11 +2,17 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-import ephys_analysis 
-import behavior_analysis
 import seaborn as sns
 import igraph as ig
+import sys 
 
+## add path to custom libraries
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+import ephys_analysis 
+import behavior_analysis
+
+## define path variables -> note to make these paths genaralizable by doing sys.argv[]
 sessionPaths = ["/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-17-25-001/suite2p/plane0", "/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-22-25-001/suite2p/plane0", "/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-30-25-001/suite2p/plane0"]
 
 # sessionPaths = ["/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-22-25-002/suite2p/plane0", "/Volumes/projects/2P5XFAD/JarascopeData/wehr3204/01-30-25-002/suite2p/plane0"]

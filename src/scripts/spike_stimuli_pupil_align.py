@@ -6,6 +6,9 @@ import numpy as np
 import scipy.io as sio
 import matplotlib.pyplot as plt
 
+## add path to custom libraries
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 ## add path to custom libraries -> can directly import the libraries, no need to add path 
 from utils.extract_vals import extract_value 
 from utils.strcmp import strcmp
