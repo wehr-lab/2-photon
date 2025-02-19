@@ -131,15 +131,36 @@ def plot_trace(data, cell_indices=None, y_lim=None):
     plt.tight_layout()
     plt.show()
 
-def subset_data(data, num_points):
+def subset_data(data, numPoints=None, percentage=None):
     """Return a subset of the data with the specified number of time points (frames)."""
-    num_cells = data.shape[0]
-    data_subset = np.zeros((num_cells, num_points))
+    if numPoints is None and percentage is None:
+        raise ValueError("Either numPoints or percentage should be specified.")
+    
+    numCells, totalPoints = data.shape
+    if numPoints is not None:
 
-    for i in range(num_cells):
-        data_subset[i] = data[i][:num_points]
+        data_subset = np.zeros((numCells, numPoints))
+
+        for i in range(num_cells):
+            data_subset[i] = data[i][:numPoints]
+
+        return data_subset
+
+    ## calculate the number of points to subset based on the percentage
+    numPoints = int((percentage / 100) * totalPoints)
+    
+    ## ensure at least one point is selected
+    numPoints = max(1, numPoints)
+
+    ## create subset array
+    data_subset = np.zeros((numCells, numPoints))
+
+    ## Subset data for each cell
+    for i in range(numCells):
+        data_subset[i] = data[i][:numPoints]
 
     return data_subset
+
 
 def binarize_matrix(matrix, threshold):
     binary_matrix = np.zeros(matrix.shape)
