@@ -92,23 +92,23 @@ plt.tight_layout()
 plt.show()
 
 
-## compute the cosine similarity between the correlation matrices of the subset data and the full length data
-cosineSim = {}
+# ## compute the cosine similarity between the correlation matrices of the subset data and the full length data
+# cosineSim = {}
 
-for subsetLength in correlationMatrices.keys():
-    refCorr = correlationMatrices[100]
-    subsetCorr = correlationMatrices[subsetLength]
-    cosineSim[(subsetLength, 100)] = np.dot(refCorr.flatten(), subsetCorr.flatten()) / (np.linalg.norm(refCorr) * np.linalg.norm(subsetCorr))
+# for subsetLength in correlationMatrices.keys():
+#     refCorr = correlationMatrices[100]
+#     subsetCorr = correlationMatrices[subsetLength]
+#     cosineSim[(subsetLength, 100)] = np.dot(refCorr.flatten(), subsetCorr.flatten()) / (np.linalg.norm(refCorr) * np.linalg.norm(subsetCorr))
 
-## plot the cosine similarity between the correlation matrices of the subset data and the full length data
-time = [time[0] for time in cosineSim.keys()]
-cosine = [cosineSim[time] for time in cosineSim.keys()]
+# ## plot the cosine similarity between the correlation matrices of the subset data and the full length data
+# time = [time[0] for time in cosineSim.keys()]
+# cosine = [cosineSim[time] for time in cosineSim.keys()]
 
-plt.plot(time, cosine)
-plt.xlabel("Time (minutes)")
-plt.ylabel("Cosine similarity")
-plt.title("Cosine similarity between the correlation matrices of the subset data and the full length data")
-plt.show()
+# plt.plot(time, cosine)
+# plt.xlabel("Time (minutes)")
+# plt.ylabel("Cosine similarity")
+# plt.title("Cosine similarity between the correlation matrices of the subset data and the full length data")
+# plt.show()
 
 ## compute the correlation of the correlation matrices 
 corrSim = {}
