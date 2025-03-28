@@ -1,22 +1,18 @@
 function fig = Plot2PCurves(plotDir, iCell)
 
 plotDeconvolved = 0; %logical for plotting deconvolved signal
-currDir = plotDir; % enter directory containing .sbx and .mat recording files
-% tunedList = [14 18 24 28 30 32 35 51 58 69 72 75 84 90 96 98 104 118 135 140 161 175 187 211 213 241 259 267 301 359];
 
-cd(currDir)
-
-matH5 = dir('wehr*.mat');
+matH5 = dir(fullfile(plotDir,'wehr*.mat'));
 load(matH5.name)
-FallDir = dir('Fall.mat');
+FallDir = dir(fullfile(plotDir,'Fall.mat'));
 if isempty(FallDir)
-    currDirContents = dir('suite2p');
+    currDirContents = dir(fullfile(plotDir, 'suite2p'));
     if ~isempty(currDirContest)
-        s2pDirContents = dir('~/suite2p/plane0');
+        s2pDirContents = dir(fullfile(plotDir, '~/suite2p/plane0'));
         if ~isempty(s2pDirContents)
-            plane0DirContents = dir('~/suite2p/plane0/Fall.mat');
+            plane0DirContents = dir(fullfile(plotDir, '~/suite2p/plane0/Fall.mat'));
             if ~isempty(plane0DirContents)
-                load('Fall.mat')
+                load(fullfile(plotDir, 'Fall.mat'))
                 iscellList = load('Fall.mat', 'iscell');
                 iscellList = iscellList.iscell(:, 1);
                 clear iscell
@@ -30,21 +26,21 @@ if isempty(FallDir)
         error('Could not locate F/all statistics in this directory!')
     end
 else
-    load('Fall.mat')
-    iscellList = load('Fall.mat', 'iscell');
+    load(fullfile(plotDir,'Fall.mat'))
+    iscellList = load(fullfile(plotDir,'Fall.mat'), 'iscell');
     iscellList = iscellList.iscell(:, 1);
     clear iscell
 end
 
 behaviorH5 = dir(fullfile(plotDir, 'wehr*.h5'));
 if isempty(behaviorH5)
-    currDirContents = dir('suite2p');
+    currDirContents = dir(fullfile(plotDir,'suite2p'));
     if ~isempty(currDirContents)
         cd('suite2p')
-        s2pDirContents = dir('plane0');
+        s2pDirContents = dir(fullfile(plotDir,'plane0'));
         if ~isempty(s2pDirContents)
             cd('plane0')
-            plane0DirContents = dir('wehr*.h5');
+            plane0DirContents = dir(fullfile(plotDir,'wehr*.h5'));
             if ~isempty(plane0DirContents)
                 fullpathH5 = fullfile(pwd, plane0DirContents.name);
             else
@@ -57,18 +53,30 @@ else
 end
 
 tones = h5read(fullpathH5, '/resultsData/currentFreq');
+intensities = h5read(fullPathH5, '/resultsData/currentIntensity');
 allTones = unique(tones);
+allInts = unique(intensities); allInts = flip(allInts);
 
 frames = info.frame;
-if ~(length(frames)/2 == length(tones))
+if rem(length(info.frame), length(tones)) == 2
+elseif rem(length(info.frame), length(tones)) == (length(tones) - 1)
+elseif ~(length(frames)/2 == length(tones))
     frames = frames(1:(end-2));
 end
 frameIndex = 1:2:length(frames);
 frames = frames(frameIndex);
 
+nCond = 0;
 for iFreq = 1:length(allTones)
-    timestamps{iFreq} = frames(tones == allTones(iFreq));
+    for iInt = 1:length(allInts)
+        nCond = nCond + 1;
+        tempTimestamps = frames(tones == allTones(iFreq));
+        tempTimestampsInt = frames(intensities == allInts(iInt));
+        timestamps{iFreq, iInt} = tempTimestamps(ismember(tempTimestamps, tempTimestampsInt));
+        nReps(nCond) = length(timestamps{iFreq, iInt});
+    end
 end
+minReps = min(nReps);
 
 iscellLog = logical(iscellList(:, 1));
 cellsToPlot = F(iscellLog, :);

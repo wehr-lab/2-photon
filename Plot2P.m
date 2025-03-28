@@ -7,7 +7,7 @@ function [] = Plot2P(varargin)
     if ~isempty(varargin)
         datadir = convertCharsToStrings(varargin{1});
     else
-        datadir = '/Volumes/Projects/2P5XFAD/JarascopeData/wehr3133/12-12-24-000'; % enter directory to plot (if none explicitly passed)
+%         datadir = '/Volumes/Projects/2P5XFAD/JarascopeData/wehr3133/12-12-24-002'; % enter directory to plot (if none explicitly passed)
     end
     
     if length(varargin) > 1
@@ -16,18 +16,17 @@ function [] = Plot2P(varargin)
 
     figdir = '/Users/sammehan/Documents/Wehr Lab/Alzheimers2P/Figs'; % where would you like to save these tuning curves?
     filepathparts = strsplit(datadir, '/'); mouseID = filepathparts{6}; sessionID = filepathparts{end};
-    savename = fullfile(figdir, strcat(filepathparts{end-1}, '-', filepathparts{end}, '-TC.ps'));
+    savename = fullfile(figdir, strcat(filepathparts{end-1}, '-', filepathparts{end}, '-TC-Mk2.ps'));
 
-    behaviorMAT = dir('wehr*.mat');
-    load(behaviorMAT.name)
+    behaviorMAT = dir(fullfile(datadir, 'wehr*.mat'));
+    load(fullfile(datadir, behaviorMAT.name))
     FallPath = fullfile(datadir, '/suite2p/plane0/Fall.mat');
     load(FallPath)
     iscellList = load(FallPath, 'iscell');
     iscellList = iscellList.iscell;
     clear iscell
-    fullPathMAT = fullfile(datadir, behaviorMAT.name); % Need to add the ability to add a-z labels, or we just presort each behavior h5 with the correct Ephys dir
 
-    behaviorH5 = dir('wehr*.h5');
+    behaviorH5 = dir(fullfile(datadir, 'wehr*.h5'));
     if isempty(behaviorH5)
         if exist(fullfile('/Volumes/Projects/2P5XFAD/JarascopeData/behavior/', mouseID), 'dir')
             dateparts = strsplit(filepathparts{end}, '-'); month = dateparts{1}; day = dateparts{2}; year = strcat('20', dateparts{end});
@@ -53,15 +52,15 @@ function [] = Plot2P(varargin)
     
     tones = h5read(fullPathH5, '/resultsData/currentFreq');
     intensities = h5read(fullPathH5, '/resultsData/currentIntensity');
-    times = h5read(fullPathH5, '/events/eventTime');
-    codes = h5read(fullPathH5, '/events/eventCode');
     allTones = unique(tones);
     allInts = unique(intensities); allInts = flip(allInts);
-    % tones = tones(837:end);
-    % intensities = intensities(837:end); % +137; ignore this, manual coding to overcome TasKontrol appending data sessions
+%     tones = tones((end-136):end);
+%     intensities = intensities((end-136):end); % +137; ignore this, manual coding to overcome TasKontrol appending data sessions
 
-    frames = info.frame;
-    if ~(length(frames)/2 == length(tones))
+    frames = info.frame; %tones = tones(1:end-1); intensities = intensities(1:end-1);
+    if rem(length(info.frame), length(tones)) == 2
+    elseif rem(length(info.frame), length(tones)) == (length(tones) - 1)
+    elseif ~(length(frames)/2 == length(tones))
         frames = frames(1:(end-2));
     end
     frameIndex = 1:2:length(frames);
@@ -79,17 +78,20 @@ function [] = Plot2P(varargin)
     end
     minReps = min(nReps);
 
-    iscellLog = logical(iscellList(:, 1));
+    iscellLog = logical(iscellList(:, 1)); iscellThresh = iscellList(:, 2);
+    % Uncomment and enter a threshold value (0-1) to use Suite2P's likelihood value to select good cells
+    % S2Pthresh = 0.95; % Suite2P likelihood threshold to use
+    % iscellLog = iscellThresh >= S2Pthresh; 
     cellsToPlot = F(iscellLog, :);
     neucellsToPlot = Fneu(iscellLog, :);
     spikesToPlot = spks(iscellLog, :);
 
     corrScalar = 0.7;
     cellsToPlotCorr = cellsToPlot - (neucellsToPlot * corrScalar);
-    cellsMean = mean(cellsToPlot, 2);
+%     cellsMean = mean(cellsToPlot, 2);
 
     for currCell = 1:size(cellsToPlotCorr, 1)
-        if ~isempty(CellToPlot)
+        if length(varargin) == 2
             currCell = CellToPlot;
         end
         for iTone = 1:length(timestamps)
@@ -109,10 +111,11 @@ function [] = Plot2P(varargin)
                         currRangeLog = currRange > size(cellsToPlotCorr, 2);
                         currRange(currRangeLog) = size(cellsToPlotCorr, 2);
                     end
-                    if sum(normRange <= 0) == length(normRange)
+                    if sum(normRange <= 0) == length(normRange) || sum(normRange <= 0) >= 1
                         normRange = (currTimestamps(iTrial) + 21):(currTimestamps(iTrial) + 30);
                     end
-                    currTrace = (cellsToPlotCorr(currCell, currRange) - mean(cellsToPlotCorr(currCell, normRange)))/mean(cellsToPlotCorr(currCell, normRange));
+%                     currTrace = (cellsToPlotCorr(currCell, currRange) - mean(cellsToPlotCorr(currCell, normRange)))/mean(cellsToPlotCorr(currCell, normRange));
+                    currTrace = (cellsToPlotCorr(currCell, currRange) - mean(cellsToPlotCorr(currCell, :)))/mean(cellsToPlotCorr(currCell, :));
                     meanRange(iTrial, :) = currTrace;
                 end
                 meanRanges{iTone, iInt} = meanRange';
@@ -143,29 +146,35 @@ function [] = Plot2P(varargin)
                     ylabel('dF/F - 50 dbSPL');
                 end
                 if which_fig == 1
-                    xlabel('2000 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
+                    xlabel('White Noise', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
                 elseif which_fig == 2
-                    xlabel('3482 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
+                    xlabel('2000 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
                 elseif which_fig == 3
-                    xlabel('6063 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
+                    xlabel('4000 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
                 elseif which_fig == 4
-                    xlabel('10556 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
+                    xlabel('8000 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
                 elseif which_fig == 5
-                    xlabel('18379 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
+                    xlabel('16000 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
                 elseif which_fig == 6
                     xlabel('32000 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
                 end
                 clear meanTrace
             end    
         end
-        if length(varargin) < 1
-            print(savename, '-dpsc2', '-append', '-bestfit');
+        if length(varargin) <= 1
+            if currCell == 1
+                exportgraphics(gcf, savename);
+            else
+                exportgraphics(gcf, savename, 'Append', true);
+            end
+%             print(savename, '-dpsc2', '-append', '-bestfit');
             sprintf('On Cell %d / %d \n', currCell, size(cellsToPlotCorr, 1))
+        end
+        if exist('CellToPlot', 'var')
+            break
         end
         clear meanRange meanRanges normRange currTrace
         close all
         
-        if exist('CellToPlot', 'var')
-            break
-        end
+        
     end
