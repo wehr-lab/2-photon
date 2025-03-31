@@ -84,24 +84,7 @@ for iDir = 1:length(Sessions)
 
     corrScalar = 0.7;
     cellsToPlotCorr{iDir} = cellsToPlot - (neucellsToPlot * corrScalar);
-end
-
-for iSess = 1:length(Sessions)
-    IntsToLabel = allInts{iSess};
-    for iAmp = 1:length(IntsToLabel)
-        ylabels{iSess,iAmp} = sprintf('dF/F - %d dbSPL', IntsToLabel(iAmp));
-    end
-end
-for iSess = 1:length(Sessions)
-    TonesToLabel = allTones{iSess};
-    for iFreq = 1:length(TonesToLabel)
-        if TonesToLabel(iFreq) == -1
-            xlabels{iSess,iFreq} = 'WN';
-        else
-            xlabels{iSess,iFreq} = sprintf('%d Hz', TonesToLabel(iFreq));
-        end
-    end
-end
+end    
 
 for currCell = 1:size(cellsToPlotCorr{1}, 1)
     for iDir = 1:length(Sessions)
@@ -138,12 +121,26 @@ for currCell = 1:size(cellsToPlotCorr{1}, 1)
         subplot1(length(allInts{iDir}),length(allTones{iDir}), 'Min', [0.05, 0.05], 'Gap', [0.01, 0.01]);
         fig = gcf; orient(fig, 'landscape');
         axes(fig, 'Position', [0.05, 0.05, 0.9, 0.9])
-        title(sprintf('ROI %s Tuning Curve - Session %s', num2str(currCell), Sessions{iDir}), 'Position', [0.5, 1.02]);
+        title(sprintf('ROI %s Tuning Curve', num2str(currCell)), 'Position', [0.5, 1.02]);
         text(0.5, -0.04, 'Time (in samples, 15.49 Hz)', 'HorizontalAlignment', 'center');
         ylabel('dF/F')
         axis off
         gcf;
         
+        for iSess = 1:length(Sessions)
+            IntsToLabel = allInts{iSess};
+            for iAmp = 1:length(IntsToLabel)
+                ylabels{iSess,iAmp} = sprintf('dF/F - %d dbSPL', IntsToLabel(iAmp));
+            end
+        end
+        for iSess = 1:length(Sessions)
+            TonesToLabel = allTones{iSess};
+            for iFreq = 1:length(TonesToLabel)
+                xlabels{iSess,iFreq} = sprintf('%d Hz', TonesToLabel(iFreq));
+            end
+        end
+            
+
         which_fig = 0;
         for iInt = 1:size(timestamps, 2)
             for iTone = 1:size(timestamps, 1)
@@ -152,23 +149,24 @@ for currCell = 1:size(cellsToPlotCorr{1}, 1)
                     meanRanges{iTone, iInt} = rmmissing(meanRanges{iTone, iInt}, 2);
                 end
                 meanTrace = mean(meanRanges{iTone, iInt}, 2);
-                subplot1(which_fig);
-                plot(meanRanges{iTone, iInt}, 'r', 'LineWidth', 1); hold on; plot(meanTrace, 'k', 'LineWidth', 2); xlim([1, 31]); xline(11, 'k', 'LineWidth', 1.5); ylim([-1.5, 10]);
-                if iTone == 1
-                    ylabel(ylabels{iDir, iInt});
+                if iDir == 1
+                    subplot1(which_fig);
                 end
+                plot(meanRanges{iTone, iInt}, 'r', 'LineWidth', 1); hold on; plot(meanTrace, 'k', 'LineWidth', 2); xlim([1, 31]); xline(11, 'k', 'LineWidth', 1.5); ylim([-1.5, 10]);
+                if iTone == 
+                ylabel(ylabels{iDir, iInt});
                 if iInt == 1
-                    xlabel(xlabels{iDir, iTone}, 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
+                    xlabel(xlabels{iDir, iTone});
                 end
                 clear meanTrace
             end
         end
-        print(savename, '-dpsc2', '-append', '-bestfit');
-%         if currCell == 1 && iDir == 1
-%             exportgraphics(gcf, savename);
-%         else
-%             exportgraphics(gcf, savename);% 'Append', true);
-%         end
+        %print(savename, '-dpsc2', '-append', '-bestfit');
+        if currCell == 1
+            exportgraphics(gcf, savename);
+        else
+            exportgraphics(gcf, savename, 'Append', true);
+        end
         sprintf('On Cell %d / %d \n', currCell, size(cellsToPlotCorr{iDir}, 1))
         clear meanRange meanRanges normRange currTrace
         close all
