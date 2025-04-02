@@ -163,12 +163,12 @@ for currCell = 1:size(cellsToPlotCorr{1}, 1)
                 clear meanTrace
             end
         end
-        print(savename, '-dpsc2', '-append', '-bestfit');
-%         if currCell == 1 && iDir == 1
-%             exportgraphics(gcf, savename);
-%         else
-%             exportgraphics(gcf, savename);% 'Append', true);
-%         end
+%         print(savename, '-dpsc2', '-append', '-bestfit');
+        if currCell == 1 && iDir == 1
+            exportgraphics(gcf, savename, 'ContentType', 'image');
+        else
+            exportgraphics(gcf, savename, 'ContentType', 'image', 'Append', true);
+        end
         sprintf('On Cell %d / %d \n', currCell, size(cellsToPlotCorr{iDir}, 1))
         clear meanRange meanRanges normRange currTrace
         close all
