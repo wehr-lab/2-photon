@@ -125,10 +125,9 @@ for caused in range(numCells):
 
 ## plot the correlation matrix and the GC matrix -> just for visual comparison 
 fig, axs = plt.subplots(1, 2, figsize=(12, 6))
-
+np.fill_diagonal(corrMAT, 0)
 im1 = axs[0].imshow(corrMAT, cmap='coolwarm', aspect='auto')
 axs[0].set_title("Correlation Connectivity")
-fig.colorbar(im1, ax=axs[0])
 
 im2 = axs[1].imshow(gcMat, cmap='coolwarm', aspect='auto')
 axs[1].set_title("Causal Network")
@@ -138,7 +137,9 @@ fig.colorbar(im2, ax=axs[1], fraction=0.046, pad=0.04)
 plt.tight_layout()
 plt.show()
 
-
+## correlaion of the GC matrix with the correlation matrix
+corrGC = np.corrcoef(corrMAT.flatten(), gcMat.flatten())[0, 1]
+print(f"Correlation between correlation matrix and GC matrix: {corrGC}")
 
 
 
