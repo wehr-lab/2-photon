@@ -166,3 +166,18 @@ def binarize_matrix(matrix, threshold):
     binary_matrix = np.zeros(matrix.shape)
     binary_matrix[matrix >= threshold] = 1
     return binary_matrix
+
+
+def spikeTimesToSpikeMatrix(spikeTimes, minTime=0, maxTime=None, binSize=1):
+
+    ## the spiketimes should already be converted to integers
+    ## also the spiketimes should be lists and not numpy arrays but can fix this code to take any later 
+    if maxTime is None:
+        maxTime = np.max([np.max(cellSpike) for cellSpike in spikeTimes]) + 10 
+    numCells = len(spikeTimes)
+    spikeMatrix = np.zeros((numCells, int((maxTime - minTime) / binSize)))
+
+    for cellnum, cellSpike in enumerate(spikeTimes):
+        spikeMatrix[cellnum], _ = np.histogram(cellSpike, bins=np.arange(minTime, maxTime, binSize))
+
+    return spikeMatrix
