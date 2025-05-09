@@ -136,18 +136,12 @@ function [] = Plot2P(varargin)
                     end
 %                     currTrace = (cellsToPlotCorr(currCell, currRange) - mean(cellsToPlotCorr(currCell, normRange)))/mean(cellsToPlotCorr(currCell, normRange));
                     if spikeLog == 1
-                        currSpikes = spikesToPlot(currCell, currRange);
-                        tempSpikes(iTrial,:) = currSpikes;
-                    else
-                        currTrace = (cellsToPlotCorr(currCell, currRange) - mean(cellsToPlotCorr(currCell, :)))/mean(cellsToPlotCorr(currCell, :));
-                        meanRange(iTrial, :) = currTrace;
-                    end
+                        currTrace = spikesToPlot(currCell, currRange);
+                    currTrace = (cellsToPlotCorr(currCell, currRange) - mean(cellsToPlotCorr(currCell, :)))/mean(cellsToPlotCorr(currCell, :));
+                     
+                    meanRange(iTrial, :) = currTrace;
                 end
-                if spikeLog == 1
-                    spikeResp{iTone, iInt} = tempSpikes';
-                else
-                    meanRanges{iTone, iInt} = meanRange';
-                end
+                meanRanges{iTone, iInt} = meanRange';
             end
         end
 
@@ -163,19 +157,13 @@ function [] = Plot2P(varargin)
         for iInt = 1:length(allInts)
             for iTone = 1:length(allTones)
                 which_fig = which_fig + 1;
-                if spikeLog ~= 1
-                    if sum(isnan(meanRanges{iTone, iInt}), 'all') ~= 0
-                        meanRanges{iTone, iInt} = rmmissing(meanRanges{iTone, iInt}, 2);
-                    end
-                    meanTrace = mean(meanRanges{iTone, iInt}, 2);
+                if sum(isnan(meanRanges{iTone, iInt}), 'all') ~= 0
+                    meanRanges{iTone, iInt} = rmmissing(meanRanges{iTone, iInt}, 2);
                 end
+                meanTrace = mean(meanRanges{iTone, iInt}, 2);
 
                 subplot1(which_fig); %plot(meanRanges{iTone, iInt}, 'r', 'LineWidth', 1); 
-                if spikeLog == 1
-                    hold on; plot(spikeResp{iTone, iInt}, 'k', 'LineWidth', 2); xlim([1, 31]); xline(11, 'LineWidth', 1.5); ylim([-1.5, 1000]);
-                else
-                    hold on; plot(meanTrace, 'k', 'LineWidth', 2); xlim([1, 31]); xline(11, 'LineWidth', 1.5); ylim([-1.5, 10]); 
-                end
+                hold on; plot(meanTrace, 'k', 'LineWidth', 2); xlim([1, 31]); xline(11, 'LineWidth', 1.5); ylim([-1.5, 10]); 
                 if iTone == 1
                     ylabel(ylabels{iInt});
                 end
