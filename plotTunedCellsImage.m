@@ -67,6 +67,11 @@ end
 frameIndex = 1:2:length(frames);
 frames = frames(frameIndex);
 
+if length(tones) > length(frames)
+    tones = tones(1:length(frames));
+    intensities = intensities(1:length(frames));
+end
+
 nCond = 0;
 for iFreq = 1:length(allTones)
     for iInt = 1:length(allInts)
@@ -175,13 +180,13 @@ end
 for iCell = 1:length(tunedList)
     scats2(iCell).MarkerFaceAlpha = normMeanPeakResponse(iCell);
 end
-%savenamePS = fullfile(figdir, sprintf('TonotopyPlot-%s-%s.ps', mouseID, sessionDate));
-savenamePDF = fullfile(figdir, sprintf('TonotopyPlot-%s-%s.pdf', mouseID, sessionDate));
-if ~exist(savenamePDF)
-    exportgraphics(gcf, savename);
-else
-    exportgraphics(gcf, savename, 'Append', true);
-end
-% print(savenamePS, '-dpsc2', '-append', '-fillpage');
+savenamePS = fullfile(figdir, sprintf('TonotopyPlot-%s-%s.ps', mouseID, sessionDate));
+% savenamePDF = fullfile(figdir, sprintf('TonotopyPlot-%s-%s.pdf', mouseID, sessionDate));
+% if ~exist(savenamePDF)
+%     exportgraphics(gcf, savename);
+% else
+%     exportgraphics(gcf, savename, 'Append', true);
+% end
+print(savenamePS, '-dpsc2', '-append', '-fillpage');
 hold off
 close all

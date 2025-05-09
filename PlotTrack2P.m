@@ -1,12 +1,16 @@
 function [] = PlotTrack2P(varargin)
 
 % Pass matched_suite2p directory (/Volumes/Projects/2P5XFAD/JarascopeData/[MOUSEID]/track2p/[TRACK2P IDENTIFIER]/matched_suite2p) 
-% to plot cells tracked across sessions
+% to plot cells tracked across sessions. Pass just the directory to plot every cell and print to a .ps, pass with a number to plot a specific cell (ROI)
 
 if ~isempty(varargin)
     datadir = convertCharsToStrings(varargin{1});
 else
     error('Gotta pass a directory to plot!')
+end
+
+if length(varargin) > 1
+    CellToPlot = varargin{2};
 end
 
 datapathparts = strsplit(datadir, '/');
@@ -15,8 +19,9 @@ figdir = '/Users/sammehan/Documents/Wehr Lab/Alzheimers2P/Figs'; % where would y
 basedir = '/Volumes/Projects/2P5XFAD/JarascopeData/'; % full data directory path to build subsequent filepaths from
 savename = fullfile(figdir, sprintf('%s-Tracked-%s.pdf', mouseID, datapathparts{8}));
 
-matched_sessions = dir(datadir); 
-matched_sessions = matched_sessions(end-1:end);
+dirFilter = strcat(datadir, '/*-*');
+matched_sessions = dir(dirFilter); 
+%matched_sessions = matched_sessions(end-1:end);
 for iSession = 1:length(matched_sessions)
     Sessions{iSession} = matched_sessions(iSession).name;
 end
@@ -25,7 +30,29 @@ for iDir = 1:length(Sessions)
     curr_session = fullfile(basedir, mouseID);
     
     tempH5 = dir(fullfile(curr_session, Sessions{iDir}, '*.h5'));
-    H5Paths{iDir} = fullfile(basedir, mouseID, Sessions{iDir}, tempH5.name);
+    if isempty(tempH5)
+        if exist(fullfile('/Volumes/Projects/2P5XFAD/JarascopeData/behavior/', mouseID), 'dir')
+            dateparts = strsplit(datapathparts{end}, '-'); month = dateparts{1}; day = dateparts{2}; year = strcat('20', dateparts{end});
+            behaviorfiles = dir(fullfile('/Volumes/Projects/2P5XFAD/JarascopeData/behavior/', mouseID, strcat(mouseID, '_am_tuning_curve_', year, month, day, '_', sessionID)));
+            if isempty(behaviorfiles)
+                behaviorfiles = dir(fullfile('/Volumes/Projects/2P5XFAD/JarascopeData/behavior/', mouseID, strcat(mouseID, '_am_tuning_curve_', year, month, day)));
+                if length(behaviorfiles) > 1
+                    error('Multiple behavior files are associated with this mouse and date, check with Sam (or the experimenter) what behavior file is correct')
+                elseif isempty(behaviorfiles)
+                    error("Can't find behavior file for this day, confirm that you ran 'sh copy_wehr_data_to_nas.sh' in the terminal on the two-photon behavior (Linux) computer to sync to the NAS")
+                else
+                    tempH5 = fullfile(behaviorfiles.folder, behaviorfiles.name);
+                end
+            else
+                tempH5 = fullfile(behaviorfiles.folder, behaviorfiles.name);
+            end
+        else
+            error("Can't find ANY behavior files associated with this mouse, confirm that you ran 'sh copy_wehr_data_to_nas.sh' in the terminal on the two-photon behavior (Linux) computer to sync to the NAS")
+        end
+    else
+        tempH5 = fullfile(tempH5.folder, tempH5.name);
+    end
+    H5Paths{iDir} = tempH5;
     tempMat = dir(fullfile(curr_session, Sessions{iDir}, '*.mat'));
     MatPaths{iDir} = fullfile(basedir, mouseID, Sessions{iDir}, tempMat(1).name);
     
@@ -55,6 +82,11 @@ for iDir = 1:length(Sessions)
     end
     frameIndex = 1:2:length(frames);
     frames = frames(frameIndex);
+    
+    if length(tones) > length(frames)
+        tones = tones(1:length(frames));
+        intensities = intensities(1:length(frames));
+    end
     
     nCond = 0;
     for iFreq = 1:length(allTones{iDir})
@@ -104,6 +136,9 @@ for iSess = 1:length(Sessions)
 end
 
 for currCell = 1:size(cellsToPlotCorr{1}, 1)
+    if length(varargin) == 2
+        currCell = CellToPlot;
+    end
     for iDir = 1:length(Sessions)
         timestamps = allTimestamps{iDir};
         for iTone = 1:size(timestamps, 1)
@@ -134,6 +169,10 @@ for currCell = 1:size(cellsToPlotCorr{1}, 1)
                 meanRanges{iTone, iInt} = meanRange';
             end
         end
+        
+        if iDir ~= 1
+            figure
+        end
 
         subplot1(length(allInts{iDir}),length(allTones{iDir}), 'Min', [0.05, 0.05], 'Gap', [0.01, 0.01]);
         fig = gcf; orient(fig, 'landscape');
@@ -153,7 +192,11 @@ for currCell = 1:size(cellsToPlotCorr{1}, 1)
                 end
                 meanTrace = mean(meanRanges{iTone, iInt}, 2);
                 subplot1(which_fig);
-                plot(meanRanges{iTone, iInt}, 'r', 'LineWidth', 1); hold on; plot(meanTrace, 'k', 'LineWidth', 2); xlim([1, 31]); xline(11, 'k', 'LineWidth', 1.5); ylim([-1.5, 10]);
+%                 plot(meanRanges{iTone, iInt}, 'r', 'LineWidth', 1); 
+                hold on; plot(meanTrace, 'k', 'LineWidth', 2); 
+                xlim([1, 31]); 
+                xline(11, 'k', 'LineWidth', 1.5); 
+                ylim([-1.5, 10]);
                 if iTone == 1
                     ylabel(ylabels{iDir, iInt});
                 end
@@ -163,14 +206,19 @@ for currCell = 1:size(cellsToPlotCorr{1}, 1)
                 clear meanTrace
             end
         end
-%         print(savename, '-dpsc2', '-append', '-bestfit');
-        if currCell == 1 && iDir == 1
-            exportgraphics(gcf, savename, 'ContentType', 'image');
-        else
-            exportgraphics(gcf, savename, 'ContentType', 'image', 'Append', true);
+        if length(varargin) <= 1
+            print(savename, '-dpsc2', '-append', '-bestfit');
+%             if currCell == 1 && iDir == 1
+%                 exportgraphics(gcf, savename, 'ContentType', 'image');
+%             else
+%                 exportgraphics(gcf, savename, 'ContentType', 'image', 'Append', true);
+%             end
+            sprintf('On Cell %d / %d \n', currCell, size(cellsToPlotCorr{iDir}, 1))
+            clear meanRange meanRanges normRange currTrace
+            close all
         end
-        sprintf('On Cell %d / %d \n', currCell, size(cellsToPlotCorr{iDir}, 1))
-        clear meanRange meanRanges normRange currTrace
-        close all
+    end
+    if exist('CellToPlot', 'var')
+        break
     end
 end

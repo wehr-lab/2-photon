@@ -4,6 +4,8 @@ function [] = writePupilCam(varargin)
 
 if ~isempty(varargin)
     datadir = convertCharsToStrings(varargin{1});
+else
+    error('No directory(s) passed to plot!')
 end
 
 fullTerm = fullfile(datadir, '*_eye.mat');

@@ -16,10 +16,10 @@ function [] = Plot2P(varargin)
 
     figdir = '/Users/sammehan/Documents/Wehr Lab/Alzheimers2P/Figs'; % where would you like to save these tuning curves?
     filepathparts = strsplit(datadir, '/'); mouseID = filepathparts{6}; sessionID = filepathparts{end};
-    savename = fullfile(figdir, strcat(filepathparts{end-1}, '-', filepathparts{end}, '-TC-Mk2.ps'));
+    savename = fullfile(figdir, strcat(filepathparts{end-1}, '-', filepathparts{end}, '-TC.ps'));
 
     behaviorMAT = dir(fullfile(datadir, 'wehr*.mat'));
-    load(fullfile(datadir, behaviorMAT.name))
+    load(fullfile(datadir, behaviorMAT(1).name))
     FallPath = fullfile(datadir, '/suite2p/plane0/Fall.mat');
     load(FallPath)
     iscellList = load(FallPath, 'iscell');
@@ -65,6 +65,11 @@ function [] = Plot2P(varargin)
     end
     frameIndex = 1:2:length(frames);
     frames = frames(frameIndex);
+    
+    if length(tones) > length(frames)
+        tones = tones(1:length(frames));
+        intensities = intensities(1:length(frames));
+    end
 
     nCond = 0;
     for iFreq = 1:length(allTones)
@@ -89,6 +94,19 @@ function [] = Plot2P(varargin)
     corrScalar = 0.7;
     cellsToPlotCorr = cellsToPlot - (neucellsToPlot * corrScalar);
 %     cellsMean = mean(cellsToPlot, 2);
+
+    IntsToLabel = allInts;
+    for iAmp = 1:length(IntsToLabel)
+        ylabels{iAmp} = sprintf('dF/F - %d dbSPL', IntsToLabel(iAmp));
+    end
+    TonesToLabel = allTones;
+    for iFreq = 1:length(TonesToLabel)
+        if TonesToLabel(iFreq) == -1
+            xlabels{iFreq} = 'WN';
+        else
+            xlabels{iFreq} = sprintf('%d Hz', TonesToLabel(iFreq));
+        end
+    end
 
     for currCell = 1:size(cellsToPlotCorr, 1)
         if length(varargin) == 2
@@ -122,7 +140,7 @@ function [] = Plot2P(varargin)
             end
         end
 
-        subplot1(2,6, 'Min', [0.05, 0.05], 'Gap', [0.01, 0.01]);
+        subplot1(length(allInts), length(allTones), 'Min', [0.05, 0.05], 'Gap', [0.01, 0.01]);
         fig = gcf; orient(fig, 'landscape');
         axes(fig, 'Position', [0.05, 0.05, 0.9, 0.9])
         title(sprintf('ROI %s Tuning Curve', num2str(currCell)), 'Position', [0.5, 1.02]); 
@@ -132,42 +150,31 @@ function [] = Plot2P(varargin)
 
         which_fig = 0;
         for iInt = 1:length(allInts)
-            for iTone = 1:length(timestamps)
+            for iTone = 1:length(allTones)
                 which_fig = which_fig + 1;
                 if sum(isnan(meanRanges{iTone, iInt}), 'all') ~= 0
                     meanRanges{iTone, iInt} = rmmissing(meanRanges{iTone, iInt}, 2);
                 end
                 meanTrace = mean(meanRanges{iTone, iInt}, 2);
 
-                subplot1(which_fig); plot(meanRanges{iTone, iInt}, 'r', 'LineWidth', 1); plot(meanTrace, 'k', 'LineWidth', 2); xlim([1, 31]); xline(11, 'LineWidth', 1.5); ylim([-1.5, 10]); 
-                if which_fig == 1
-                    ylabel('dF/F - 70 dbSPL');
-                elseif which_fig == 7
-                    ylabel('dF/F - 50 dbSPL');
+                subplot1(which_fig); %plot(meanRanges{iTone, iInt}, 'r', 'LineWidth', 1); 
+                hold on; plot(meanTrace, 'k', 'LineWidth', 2); xlim([1, 31]); xline(11, 'LineWidth', 1.5); ylim([-1.5, 10]); 
+                if iTone == 1
+                    ylabel(ylabels{iInt});
                 end
-                if which_fig == 1
-                    xlabel('White Noise', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
-                elseif which_fig == 2
-                    xlabel('2000 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
-                elseif which_fig == 3
-                    xlabel('4000 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
-                elseif which_fig == 4
-                    xlabel('8000 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
-                elseif which_fig == 5
-                    xlabel('16000 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
-                elseif which_fig == 6
-                    xlabel('32000 Hz', 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
+                if iInt == 1
+                    xlabel(xlabels{iTone}, 'Position', [11, 10.65], 'HorizontalAlignment', 'center');
                 end
                 clear meanTrace
             end    
         end
         if length(varargin) <= 1
-            if currCell == 1
-                exportgraphics(gcf, savename);
-            else
-                exportgraphics(gcf, savename, 'Append', true);
-            end
-%             print(savename, '-dpsc2', '-append', '-bestfit');
+%             if currCell == 1
+%                 exportgraphics(gcf, savename);
+%             else
+%                 exportgraphics(gcf, savename, 'Append', true);
+%             end
+            print(savename, '-dpsc2', '-append', '-bestfit');
             sprintf('On Cell %d / %d \n', currCell, size(cellsToPlotCorr, 1))
         end
         if exist('CellToPlot', 'var')
