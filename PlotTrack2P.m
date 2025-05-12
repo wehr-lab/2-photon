@@ -200,7 +200,11 @@ for currCell = 1:size(cellsToPlotCorr{1}, 1)
         subplot1(length(allInts{iDir}),length(allTones{iDir}), 'Min', [0.05, 0.05], 'Gap', [0.01, 0.01]);
         fig = gcf; orient(fig, 'landscape');
         axes(fig, 'Position', [0.05, 0.05, 0.9, 0.9])
-        title(sprintf('ROI %s Tuning Curve - Session %s', num2str(currCell), Sessions{iDir}), 'Position', [0.5, 1.02]);
+        if spikeLog ~= 1
+            title(sprintf('ROI %s Tuning Curve - Sess. %s', num2str(currCell), Sessions{iDir}), 'Position', [0.5, 1.02]);
+        else
+            title(sprintf('ROI %s PSTH - Sess. %s', num2str(currCell), Sessions{iDir}), 'Position', [0.5, 1.02]);
+        end
         text(0.5, -0.04, 'Time (in samples, 15.49 Hz)', 'HorizontalAlignment', 'center');
         ylabel('dF/F')
         axis off
@@ -222,7 +226,8 @@ for currCell = 1:size(cellsToPlotCorr{1}, 1)
                     hold on; hist(sum(spikeResp{iTone,iInt},1),30);
                     histo = findobj(gca);
                     histo(2).FaceColor = [0 0 0];
-                    ylim([0, 25]);
+                    ylims = [0, 25];
+                    ylim(ylims);
                     xlim([1, 31]); 
                 else
                     hold on; plot(meanTrace, 'k', 'LineWidth', 2);
@@ -234,7 +239,8 @@ for currCell = 1:size(cellsToPlotCorr{1}, 1)
                     ylabel(ylabels{iDir, iInt});
                 end
                 if iInt == 1
-                    xlabel(xlabels{iDir, iTone}, 'Position', [11, (ylim(2)+0.65)], 'HorizontalAlignment', 'center');
+                    xLabYPos = ylims(2) + 2;
+                    xlabel(xlabels{iDir, iTone}, 'Position', [11, xLabYPos], 'HorizontalAlignment', 'center');
                 end
                 clear meanTrace
             end
