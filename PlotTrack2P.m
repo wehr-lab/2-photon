@@ -14,6 +14,8 @@ if length(varargin) > 1
 end
 
 spikeLog = 0;                                                               % Logical variable to switch between plotting luminence traces or deconvolved spikes
+binarizeSpikes = 1;                                                         % Logical variable on whether to convert deconvolved spikes into binary responses
+smin = 0.5;                                                                 % Threshold for spikes (smin * maxvalue per cell = minimum spike threshold)
 
 datapathparts = strsplit(datadir, '/');
 mouseID = datapathparts{6}; 
@@ -115,7 +117,15 @@ for iDir = 1:length(Sessions)
     % iscellLog = iscellThresh >= S2Pthresh; 
     cellsToPlot = F(iscellLog, :);
     neucellsToPlot = Fneu(iscellLog, :);
-    spikesToPlot{iDir} = spks(iscellLog, :);
+    goodSpikes = spks(iscellLog, :);
+    if binarizeSpikes == 1
+        for iCell = 1:size(spks,1)
+            maxResp = max(goodSpikes(iCell,:));
+            rast = goodSpikes(iCell,:) >= (maxResp * smin);
+        end
+    else
+        spikesToPlot{iDir} = goodSpikes;
+    end
 
     corrScalar = 0.7;
     cellsToPlotCorr{iDir} = cellsToPlot - (neucellsToPlot * corrScalar);
@@ -141,7 +151,7 @@ if spikeLog == 1
     cmap = jet(minReps);
 end
 
-for currCell = 1:size(cellsToPlotCorr{1}, 1)
+for currCell = 47:size(cellsToPlotCorr{1}, 1)%1:size(cellsToPlotCorr{1}, 1)
     if length(varargin) == 2
         currCell = CellToPlot;
     end
@@ -232,7 +242,7 @@ for currCell = 1:size(cellsToPlotCorr{1}, 1)
             end
         end
         if length(varargin) <= 1
-            print(savename, '-dpsc2', '-append', '-bestfit');
+%             print(savename, '-dpsc2', '-append', '-bestfit');
 %             if currCell == 1 && iDir == 1
 %                 exportgraphics(gcf, savename, 'ContentType', 'image');
 %             else
