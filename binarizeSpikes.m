@@ -38,5 +38,5 @@ for iCell = 1:size(spks,1)
     binSpikes(iCell, :) = rast;
 end
 
-savename = fullfile(FallFullPath, 'binSpikes.mat');
+savename = fullfile(FallPath, 'binSpikes.mat');
 save(savename, 'binSpikes');
