@@ -21,7 +21,7 @@ function [] = Plot2P(varargin)
         end
         spikeLog = varargin{3};
     else
-        spikeLog = 0;                                                       % Logical variable to switch between plotting luminence traces or deconvolved spikes
+        spikeLog = 1;                                                       % Logical variable to switch between plotting luminence traces or deconvolved spikes
     end
     smin = 0.5;                                                             % Threshold for spikes (smin * maxvalue per cell = minimum spike threshold)
 
@@ -154,7 +154,7 @@ function [] = Plot2P(varargin)
                     end
 %                     currTrace = (cellsToPlotCorr(currCell, currRange) - mean(cellsToPlotCorr(currCell, normRange)))/mean(cellsToPlotCorr(currCell, normRange));
                     if spikeLog == 1
-                        currSpikes = goodSpikes(currCell, currRange);
+                        currSpikes = spikesToPlot(currCell, currRange);
                         tempSpikes(iTrial,:) = currSpikes;
                     else
                         currTrace = (cellsToPlotCorr(currCell, currRange) - mean(cellsToPlotCorr(currCell, :)))/mean(cellsToPlotCorr(currCell, :));
@@ -173,7 +173,7 @@ function [] = Plot2P(varargin)
         fig = gcf; orient(fig, 'landscape');
         axes(fig, 'Position', [0.05, 0.05, 0.9, 0.9])
         if spikeLog ~= 1
-            title(sprintf('ROI %s Tuning Curve - Sess. %s', num2str(currCell), sessionID), 'Position', [0.5, 1.02]);
+            title(sprintf('ROI %s Tuning Curve - Sess. %s', num2str(currCell)), sessionID, 'Position', [0.5, 1.02]);
         else
             title(sprintf('ROI %s PSTH - Sess. %s', num2str(currCell), sessionID), 'Position', [0.5, 1.02]);
         end
@@ -205,7 +205,7 @@ function [] = Plot2P(varargin)
                         ydots = (0.67 * ylims(2)) + random('normal', 0, 1, [1 length(xdots)]);
                         hold on; scatter(xdots, ydots, 30, '.k');
                     end
-                    xlim([1, 31]); xline(11, 'LineWidth', 1.5);
+                    xlim([1, 31]); xline(11, 'LineWidth', 1.5); ylim([-1.5, 10]);
                 else
                     hold on; plot(meanTrace, 'k', 'LineWidth', 2); 
                     xlim([1, 31]); 

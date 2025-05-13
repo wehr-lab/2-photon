@@ -1,7 +1,8 @@
 function [] = PlotTrack2P(varargin)
 
 % Pass matched_suite2p directory (/Volumes/Projects/2P5XFAD/JarascopeData/[MOUSEID]/track2p/[TRACK2P IDENTIFIER]/matched_suite2p) 
-% to plot cells tracked across sessions. Pass just the directory to plot every cell and print to a .ps, pass with a number to plot a specific cell (ROI)
+% to plot cells tracked across sessions. Pass just the directory name to plot every cell and print to a .ps, pass with a number to plot a specific cell (ROI)
+% 3rd input variable is a switch to plot spikes, use 1 to plot spikes, 0 to plot fluorescence traces
 
 if ~isempty(varargin)
     datadir = convertCharsToStrings(varargin{1});
@@ -9,12 +10,20 @@ else
     error('Gotta pass a directory to plot!')
 end
 
-if length(varargin) > 1
+if length(varargin) == 2
     CellToPlot = varargin{2};
 end
 
-spikeLog = 1;                                                               % Logical variable to switch between plotting luminence traces or deconvolved spikes
+if length(varargin) == 3
+    if ~isempty(varargin{2})
+        CellToPlot = varargin{2};
+    end
+    spikeLog = varargin{3};
+else
+    spikeLog = 1;                                                           % Logical variable to switch between plotting luminence traces or deconvolved spikes
+end
 smin = 0.5;                                                                 % Threshold for spikes (smin * maxvalue per cell = minimum spike threshold)
+
 
 datapathparts = strsplit(datadir, '/');
 mouseID = datapathparts{6}; 
@@ -121,6 +130,7 @@ for iDir = 1:length(Sessions)
         for iCell = 1:size(spks,1)
             maxResp = max(goodSpikes(iCell,:));
             rast = goodSpikes(iCell,:) >= (maxResp * smin);
+            totalSpikeCounts(iCell) = sum(rast);
             goodSpikes(iCell, :) = rast;
         end
         spikesToPlot{iDir} = goodSpikes;
@@ -187,6 +197,7 @@ for currCell = 1:size(cellsToPlotCorr{1}, 1)
                 end
                 if spikeLog == 1
                     spikeResp{iTone, iInt} = tempSpikes;
+                    spikesInWindow(iTone, iInt) = sum(tempSpikes, 'all');
                 else
                     meanRanges{iTone, iInt} = meanRange';
                 end
@@ -206,7 +217,6 @@ for currCell = 1:size(cellsToPlotCorr{1}, 1)
             title(sprintf('ROI %s PSTH - Sess. %s', num2str(currCell), Sessions{iDir}), 'Position', [0.5, 1.02]);
         end
         text(0.5, -0.04, 'Time (in samples, 15.49 Hz)', 'HorizontalAlignment', 'center');
-        ylabel('dF/F')
         axis off
         gcf;
         
@@ -223,15 +233,21 @@ for currCell = 1:size(cellsToPlotCorr{1}, 1)
                 subplot1(which_fig);
 %                 plot(meanRanges{iTone, iInt}, 'r', 'LineWidth', 1); 
                 if spikeLog == 1
-                    hold on; hist(sum(spikeResp{iTone,iInt},1),30);
+                    hold on; histogram('BinEdges', [0.5:31.5], 'BinCounts',sum(spikeResp{iTone,iInt},1));
                     histo = findobj(gca);
                     histo(2).FaceColor = [0 0 0];
-                    ylims = [0, 25];
+                    ylims = [0, 10];
                     ylim(ylims);
-                    xlim([1, 31]); 
+                    xlim([1, 31]);
+                    [~, xdots] = find(sum(spikeResp{iTone, iInt},1));
+                    if ~isempty(xdots)
+                        ydots = (0.67 * ylims(2)) + random('normal', 0, 1, [1 length(xdots)]);
+                        hold on; scatter(xdots, ydots, 30, '.k');
+                    end
                 else
                     hold on; plot(meanTrace, 'k', 'LineWidth', 2);
-                    ylim([-1.5, 10]);
+                    ylims = [-1.5, 10];
+                    ylim(ylims);
                     xlim([1, 31]); 
                 end
                 xline(11, 'k', 'LineWidth', 1.5);
@@ -239,10 +255,10 @@ for currCell = 1:size(cellsToPlotCorr{1}, 1)
                     ylabel(ylabels{iDir, iInt});
                 end
                 if iInt == 1
-                    xLabYPos = ylims(2) + 2;
+                    xLabYPos = ylims(2) + 0.65;
                     xlabel(xlabels{iDir, iTone}, 'Position', [11, xLabYPos], 'HorizontalAlignment', 'center');
                 end
-                clear meanTrace
+                clear meanTrace ydots
             end
         end
         if length(varargin) <= 1
