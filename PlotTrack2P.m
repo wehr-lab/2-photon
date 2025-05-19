@@ -250,7 +250,7 @@ for currCell = 1:size(cellsToPlotCorr{1}, 1)
                     ylim(ylims);
                     xlim([1, 31]); 
                 end
-                xline(11, 'k', 'LineWidth', 1.5);
+                xline(11, '--', 'Color', [0.5 0.5 0.5], 'LineWidth', 1);
                 if iTone == 1
                     ylabel(ylabels{iDir, iInt});
                 end
