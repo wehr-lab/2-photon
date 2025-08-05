@@ -49,10 +49,10 @@ for _ in range(n_subjects):
     
     G_base = nx.from_numpy_array(bin_mat)
 
-    G1 = G_base.copy()
-    G2 = G_base.copy()
-    r1, r2 = [], []
-    s1, s2 = [], []
+    G1 = G_base.copy() ## for rich-club attack
+    G2 = G_base.copy() ## for random attack
+    r1, r2 = [], [] ## rich-club coefficients but for 1 subject
+    s1, s2 = [], [] ## small-worldness but for 1 subject
 
     for _ in range(attack_steps):
         r1.append(compute_rich_club(G1))

@@ -1,0 +1,5 @@
+* Network analysis
+1. Check the value types of the full matrix
+2. How sparse is the matrix? 
+3. Is the graph fragmented or still 1 component? 
+4. Problem of partial observability 
