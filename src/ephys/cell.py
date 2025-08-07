@@ -1,4 +1,4 @@
-from utils.extract_vals import extract_value
+from utils.util_funcs import extract_value
 
 class Cell:
     def __init__(self, sortedUnits):

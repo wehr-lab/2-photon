@@ -1,5 +1,5 @@
 import pandas as pd
-from events import Events
+from .events import Events
 
 class EventsProcess():
 

@@ -10,8 +10,7 @@ import matplotlib.pyplot as plt
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 ## add path to custom libraries -> can directly import the libraries, no need to add path 
-from utils.extract_vals import extract_value 
-from utils.strcmp import strcmp
+from utils.util_funcs import extract_value, strcmp 
 from behavior import Behavior
 from events import Events
 from session import Session

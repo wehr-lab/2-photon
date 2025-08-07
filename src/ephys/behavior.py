@@ -1,15 +1,15 @@
 import scipy.io as sio
 import numpy as np 
-from utils.extract_vals import extract_value
+from utils.util_funcs import extract_value
 
 class Behavior:
 
-    def __init__(self, behaviorFile):
+    def __init__(self, behaviorFilePath):
 
         ''' 
         args: the full behav.mat filepath
         '''
-        behaviorFile = sio.loadmat(behaviorFile, struct_as_record=True)
+        behaviorFile = sio.loadmat(behaviorFilePath, struct_as_record=True)
         self.head = behaviorFile["Head"]
         self.reye = behaviorFile["Reye"] 
         self.sky = behaviorFile["Sky"]

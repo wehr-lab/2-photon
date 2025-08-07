@@ -35,3 +35,10 @@ def safeRichClub(G, k=None):
 
 def richClubDegreeN(G, k):
     pass 
+
+def matDensity(mat):
+    """Calculate the connection density of a 3D connectivity matrix."""
+    total_connections = mat.size
+    non_zeros = np.count_nonzero(mat)
+    density = non_zeros / total_connections
+    return density

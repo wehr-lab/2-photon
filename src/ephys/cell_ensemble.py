@@ -1,6 +1,6 @@
 import pandas as pd 
 import numpy as np
-from cell import Cell
+from .cell import Cell
 
 class CellEnsemble:
 
