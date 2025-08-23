@@ -44,6 +44,7 @@ def strcmp(str1, str2):
 def hdf5ToDict(hdf5FilePath):
     '''Convert a HDF5 file (including groups and datasets) into a nested dictionary.
 
+    TODO: Implement with only certain keys to read -> otherwise taking too long.
     Args:
         hdf5FilePath: full path to the HDF5 file
 
