@@ -13,6 +13,8 @@ class EventsProcess():
         self.stimDescription = None 
         self.OEStartTime = None
         self.OEEndTime = None 
+        self.universalStartTime = None
+        self.universalEndTime = None
         self.freqStart = None
         self.freqEnd = None
         self.firstFrame = None 
