@@ -6,6 +6,7 @@ import glob
 import numpy as np 
 import scipy.io as sio
 import matplotlib.pyplot as plt
+import pandas as pd
 
 # Current script directory
 parentDir = Path().resolve().parent.parent 
@@ -13,6 +14,7 @@ parentDir = Path().resolve().parent.parent
 Path().resolve()
 configDir = parentDir / "config"
 sys.path.append(str(configDir))
+print(sys.path)
 from settings import DATA_PATH, CODE_PATH
 
 sys.path.append(str(CODE_PATH["2-photon"]))
@@ -203,4 +205,4 @@ sessionProcessDF = currSessionProcess.toDataFrame()
 # plt.show()
 
 # save the dataMatrix as a .npy file 
-np.save(os.path.join(BONSAI_DIR_PATH, "sessionProcessDF.npy"), sessionProcessDF)
+sessionProcessDF.to_pickle(os.path.join(BONSAI_DIR_PATH, "sessionProcessDF.pkl"))
