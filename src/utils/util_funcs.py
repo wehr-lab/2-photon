@@ -296,4 +296,36 @@ def getAttrList(obj):
     '''
     return [attr for attr in dir(obj) if not attr.startswith("_") and not callable(getattr(obj, attr))]
 
+
+# Convert spike times to spike counts in time bins
+def spikeTimes_to_spikeCounts(spike_times_list, bin_size=0.1, time_window=None):
+    """
+    Convert list of spike times to binned spike counts
+    
+    Parameters:
+    - spike_times_list: list of arrays, each containing spike times for one neuron
+    - bin_size: time bin size in seconds
+    - time_window: [start, end] time window, or None for auto-detect
+    """
+    # Determine time window
+    if time_window is None:
+        return ValueError("Please provide a time_window as [start, end]")
+        # all_spikes = np.concatenate([st for st in spike_times_list if len(st) > 0])
+        # time_window = [np.min(all_spikes), np.max(all_spikes)]
+    
+    # Create time bins
+    time_bins = np.arange(time_window[0], time_window[1] + bin_size, bin_size)
+    
+    # Count spikes for each neuron in each bin
+    spike_counts = np.zeros((len(spike_times_list), len(time_bins) - 1))
+    
+    for neuron_idx, spike_times in enumerate(spike_times_list):
+        if len(spike_times) > 0:
+            counts, _ = np.histogram(spike_times, bins=time_bins)
+            spike_counts[neuron_idx, :] = counts
+    
+    return spike_counts  # Shape: (n_neurons, n_time_bins)
+
+
+
 ## add a function for plotting such as fig size title sizes etc and run it at the beginning of every notebook. 
