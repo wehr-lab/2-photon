@@ -290,3 +290,10 @@ def convertBinToSpikeTimes(binMat):
         outMat.append(spikeTimes)
     return outMat
 
+def getAttrList(obj):
+    '''
+    Get a list of attributes of an object excluding private and callable attributes.
+    '''
+    return [attr for attr in dir(obj) if not attr.startswith("_") and not callable(getattr(obj, attr))]
+
+## add a function for plotting such as fig size title sizes etc and run it at the beginning of every notebook. 
