@@ -9,12 +9,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # Current script directory
-parentDir = Path().resolve().parent.parent 
-# print(parentDir)
-Path().resolve()
+parentDir = Path(__file__).resolve().parent.parent.parent
+print(f"Parent dir: {parentDir}")
 configDir = parentDir / "config"
 sys.path.append(str(configDir))
-print(sys.path)
+print(f"Sys path: {sys.path}")
 from settings import DATA_PATH, CODE_PATH
 
 sys.path.append(str(CODE_PATH["2-photon"]))
@@ -29,7 +28,7 @@ from ephys.session import Session
 from ephys.session_process import SessionProcess
 
 ## define variables 
-BONSAI_DIR_PATH = Path(DATA_PATH["toneDecode"], "2022-05-10_14-02-30_mouse-0956") ## or we can do sys.argv to pass the path as an argument
+BONSAI_DIR_PATH = Path(DATA_PATH["toneDecode"], "2022-05-10_13-29-57_mouse-0956") ## or we can do sys.argv to pass the path as an argument
 
 ## load the .mat files 
 behaviorFilePath = glob.glob(os.path.join(BONSAI_DIR_PATH, "Beh*.mat"))[0]
