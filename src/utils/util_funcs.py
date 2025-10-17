@@ -326,6 +326,23 @@ def spikeTimes_to_spikeCounts(spike_times_list, bin_size=0.1, time_window=None):
     
     return spike_counts  # Shape: (n_neurons, n_time_bins)
 
+def get_consecutive_true_lengths(bool_array):
+    """Calculate lengths of consecutive True segments in a boolean array"""
+    # Add False padding at start and end
+    padded = np.concatenate(([False], bool_array, [False]))
+    
+    # Find where values change (transitions)
+    transitions = np.where(np.diff(padded))[0]
 
+    # Extract lengths of True segments (every other pair of transitions)
+    if len(transitions) > 0 and padded[transitions[0] + 1]:  # First transition is False->True
+        true_lengths = transitions[1::2] - transitions[::2]
+    else:  # First transition is True->False (starts with True)
+        if len(transitions) > 1:
+            true_lengths = transitions[1::2] - transitions[::2]
+        else:
+            true_lengths = np.array([])
+    
+    return true_lengths
 
 ## add a function for plotting such as fig size title sizes etc and run it at the beginning of every notebook. 
