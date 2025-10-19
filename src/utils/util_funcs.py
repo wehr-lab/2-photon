@@ -1,5 +1,6 @@
 import numpy as np 
 import h5py
+from scipy import interpolate
 
 def extract_value(arr, fieldname=None):
     '''Only run this function after importing numpy as np. 
@@ -344,5 +345,31 @@ def get_consecutive_true_lengths(bool_array):
             true_lengths = np.array([])
     
     return true_lengths
+
+def interpolate_nans(data):
+    # Find valid (non-NaN) indices
+    valid_mask = ~np.isnan(data)
+    valid_indices = np.where(valid_mask)[0]
+    
+    if len(valid_indices) < 2:  # Need at least 2 points to interpolate
+        return data
+    
+    # Create interpolation function
+    interp_func = interpolate.interp1d(
+        valid_indices, 
+        data[valid_mask], 
+        kind='linear', 
+        bounds_error=False, 
+        fill_value='extrapolate'
+    )
+
+    print(type(interp_func))
+    
+    # Apply to all indices
+    all_indices = np.arange(len(data))
+    interpolated = interp_func(all_indices)
+    
+    return interpolated
+
 
 ## add a function for plotting such as fig size title sizes etc and run it at the beginning of every notebook. 
