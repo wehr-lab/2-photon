@@ -372,4 +372,14 @@ def interpolate_nans(data):
     return interpolated
 
 
+def list_keys(d, parent_key=''):
+    """Recursively list all keys in a nested dictionary."""
+    keys = []
+    for k, v in d.items():
+        full_key = f"{parent_key}.{k}" if parent_key else k
+        keys.append(full_key)
+        if isinstance(v, dict):
+            keys.extend(list_keys(v, full_key))
+    return keys
+
 ## add a function for plotting such as fig size title sizes etc and run it at the beginning of every notebook. 
