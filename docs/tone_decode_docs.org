@@ -1,3 +1,5 @@
 Questions:
 1. 1 frame = how much time? Or what is the frame rate for the matrices? 
 2. The binning time: average of ISI? Got this idea from: https://www.youtube.com/watch?v=HGrJIcwhPlg&ab_channel=iiptv
+
+Not all cells were used for network construction, so when we use the spiking data, use the "Resp" field of the hdf5todict converted dict. 
