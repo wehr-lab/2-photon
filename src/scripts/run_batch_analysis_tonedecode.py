@@ -59,7 +59,7 @@ class ArousalNetworkBatchProcessor:
                 "--session_path", str(session_path)
             ]
 
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(Path(CODE_PATH["2-photon"], "src", "sandbox"))) ## change this to scripts if needed when I move this to scripts
+            result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(Path(CODE_PATH["2-photon"], "scripts"))) ## change this to scripts if needed when I move this to scripts
             if result.returncode != 0:
                 print(f"Error processing {session_path.name}: {result.stderr}")
                 return False
@@ -80,7 +80,7 @@ class ArousalNetworkBatchProcessor:
         
         try:
             # Load data
-            session_df = pd.read_pickle(session_path / "sessionProcessDF.pkl")
+            # session_df = pd.read_pickle(session_path / "sessionProcessDF.pkl")
             
             with open(session_path / "neural_pupil_network_aligned_temporally.pkl", 'rb') as f:
                 neural_pupil_network = pickle.load(f)
@@ -365,7 +365,7 @@ class ArousalNetworkBatchProcessor:
         print(f"Found {len(sessions)} sessions to process")
         
         for session_path in sessions:
-            session_name = session_path.name
+            session_name = session_path.name 
             
             # Step 1: Run neural pupil network processing if needed
             if run_preprocessing:
@@ -394,8 +394,7 @@ def main():
     
     # Setup paths
     base_data_path = Path(DATA_PATH["toneDecode"])
-    results_dir = Path("./arousal_analysis_results")
-    
+    results_dir = Path(DATA_PATH["toneDecode"], "arousal_analysis_results") 
     # Create processor obj
     processor = ArousalNetworkBatchProcessor(base_data_path, results_dir)
     

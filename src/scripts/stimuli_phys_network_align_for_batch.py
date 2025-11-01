@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 # %%
 ## import custom modules 
-repoDir = Path().resolve().parent ## dir of the repo root
+repoDir = Path().resolve().parent.parent ## dir of the repo root
 print("repoDir:", repoDir)
 configDir = repoDir / "config"
 sys.path.append(str(configDir))
