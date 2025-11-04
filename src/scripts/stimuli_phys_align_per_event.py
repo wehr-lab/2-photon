@@ -1,9 +1,9 @@
-## import standard libraries 
-import os 
-import sys 
+## import standard libraries
+import os
+import sys
 from pathlib import Path
-import glob 
-import numpy as np 
+import glob
+import numpy as np
 import scipy.io as sio
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -18,7 +18,7 @@ from settings import DATA_PATH, CODE_PATH
 
 sys.path.append(str(CODE_PATH["2-photon"]))
 
-from utils.util_funcs import extract_value, strcmp 
+from utils.util_funcs import extract_value, strcmp
 from ephys.behavior import Behavior
 from ephys.cell import Cell
 from ephys.cell_ensemble import CellEnsemble
@@ -27,33 +27,35 @@ from ephys.events_process import EventsProcess
 from ephys.session import Session
 from ephys.session_process import SessionProcess
 
-## define variables 
-BONSAI_DIR_PATH = Path(DATA_PATH["toneDecode"], "2022-05-10_13-29-57_mouse-0956") ## or we can do sys.argv to pass the path as an argument
+## define variables
+BONSAI_DIR_PATH = Path(
+    DATA_PATH["toneDecode"], "2022-05-10_13-29-57_mouse-0956"
+)  ## or we can do sys.argv to pass the path as an argument
 
-## load the .mat files 
+## load the .mat files
 behaviorFilePath = glob.glob(os.path.join(BONSAI_DIR_PATH, "Beh*.mat"))[0]
 behaviorFile = Behavior(behaviorFilePath)
 
-headFile = behaviorFile.get_head_data() 
+headFile = behaviorFile.get_head_data()
 reyeFile = behaviorFile.get_reye_data()
 
-## define the ephys dir 
+## define the ephys dir
 sessionName = reyeFile["dirName"]
-sessionName = extract_value(sessionName, 'dirName')
+sessionName = extract_value(sessionName, "dirName")
 ephysDirPath = os.path.join(BONSAI_DIR_PATH, sessionName)
 
 ## load the sortedUnits file
 sortedUnitsFilePath = glob.glob(os.path.join(ephysDirPath, "Sort*.mat"))[0]
 sortedUnitsFile = sio.loadmat(sortedUnitsFilePath, struct_as_record=True)
-sortedUnitsFile = sortedUnitsFile['SortedUnits']
+sortedUnitsFile = sortedUnitsFile["SortedUnits"]
 sortedUnitsFile = sortedUnitsFile.reshape(-1)
 
-## load the notebook file 
+## load the notebook file
 notebookFilePath = glob.glob(os.path.join(ephysDirPath, "note*.mat"))[0]
 notebookFile = sio.loadmat(notebookFilePath, struct_as_record=True)
 stimLog = notebookFile["stimlog"].reshape(-1)
 
-## create a list of Cell objects to pass to CellEnsemble class 
+## create a list of Cell objects to pass to CellEnsemble class
 cells = []
 for cell in sortedUnitsFile:
     cells.append(Cell(cell))
@@ -67,69 +69,113 @@ eventsFile = sio.loadmat(eventsFilePath, struct_as_record=True)["Events"]
 eventsFile = eventsFile.reshape(-1)
 
 
-events = [] 
+events = []
 for event in eventsFile:
     events.append(Events(event))
 
 session = Session(events)
-sessionDF = session.toDataFrame() 
+sessionDF = session.toDataFrame()
 
 pupilDiameter = behaviorFile.get_pupilDiameter_data()
 cellEnsembleDF = cellEnsemble.toDataFrame()
 
-## Extract stimulus onset and offset times 
-timeWindow = [-0.5, 0.5] ## time window in seconds to extract spikes around the stimulus onset
+## Extract stimulus onset and offset times
+timeWindow = [
+    -0.2,
+    0.5,
+]  ## time window in seconds to extract spikes around the stimulus onset
 
-## define the frame numbers when the first and last stimuli were presented 
-sessionFrameNums = reyeFile["TTs"][0, 0].reshape(-1) ## frame numbers when the stimuli were presented
-firstEventFrame = sessionFrameNums[0] ## first frame number when the first stimulus was presented
-lastEventFrame = sessionFrameNums[-1] ## last frame number when the last stimulus was presented
+## define the frame numbers when the first and last stimuli were presented
+sessionFrameNums = reyeFile["TTs"][0, 0].reshape(
+    -1
+)  ## frame numbers when the stimuli were presented
+firstEventFrame = sessionFrameNums[
+    0
+]  ## first frame number when the first stimulus was presented
+lastEventFrame = sessionFrameNums[
+    -1
+]  ## last frame number when the last stimulus was presented
 
 ## extract the time for OpenEphys for the first and last stimulus presentation
-OEFirstEventTime = session.get_event(0).soundcard_trigger_timestamp_sec ## OE time in seconds when the first stimulus was presented
-OELastEventTime = session.get_event(-1).soundcard_trigger_timestamp_sec ## OE time in seconds when the last stimulus was presented 
+OEFirstEventTime = (
+    session.get_event(0).soundcard_trigger_timestamp_sec
+)  ## OE time in seconds when the first stimulus was presented
+OELastEventTime = (
+    session.get_event(-1).soundcard_trigger_timestamp_sec
+)  ## OE time in seconds when the last stimulus was presented
 
 ## to track the frame numbers with OE time, find the slope and intercept of FrameNumber vs OE time
 framesPerSec = (lastEventFrame - firstEventFrame) / (OELastEventTime - OEFirstEventTime)
-intercept = firstEventFrame - (framesPerSec * OEFirstEventTime) ## frame number when OE time is 0
+intercept = firstEventFrame - (
+    framesPerSec * OEFirstEventTime
+)  ## frame number when OE time is 0
 
 ## processing each event now
 eventsProcess = []
 for trial in range(len(session)):
-    if strcmp(session.get_event(trial).type, ('tone', 'whitenoise', 'silentsound')):
-        if hasattr(session.get_event(trial), 'soundcard_trigger_timestamp_sec'):
-            eventStartTime = session.get_event(trial).soundcard_trigger_timestamp_sec 
+    if strcmp(session.get_event(trial).type, ("tone", "whitenoise", "silentsound")):
+        if hasattr(session.get_event(trial), "soundcard_trigger_timestamp_sec"):
+            eventStartTime = session.get_event(trial).soundcard_trigger_timestamp_sec
         else:
-            raise ValueError('Event does not have soundcard_trigger_timestamp_sec attribute.')
+            raise ValueError(
+                "Event does not have soundcard_trigger_timestamp_sec attribute."
+            )
 
         ## now store all the event specific information in the EventsProcess object
-        currEvent = EventsProcess(session.get_event(trial)) ## initialize with the Events object
-        
-        ## event (trial) specific start and stop times 
-        currEvent.OEStartTime = np.float32(eventStartTime + timeWindow[0]) ## start time in milliseconds
+        currEvent = EventsProcess(
+            session.get_event(trial)
+        )  ## initialize with the Events object
+
+        ## event (trial) specific start and stop times
+        currEvent.OEStartTime = np.float32(
+            eventStartTime + timeWindow[0]
+        )  ## start time in milliseconds
         currEvent.OEEndTime = np.float32(eventStartTime + timeWindow[1])
         currEvent.freqStart = np.float32(eventStartTime)
-        currEvent.universalStartTime = np.float32(session.get_event(0).soundcard_trigger_timestamp_sec + timeWindow[0]) ## start time in milliseconds
-        currEvent.universalEndTime = np.float32(session.get_event(-1).soundcard_trigger_timestamp_sec + timeWindow[1]) ## end time in milliseconds
+        currEvent.universalStartTime = np.float32(
+            session.get_event(0).soundcard_trigger_timestamp_sec + timeWindow[0]
+        )  ## start time in milliseconds
+        currEvent.universalEndTime = np.float32(
+            session.get_event(-1).soundcard_trigger_timestamp_sec + timeWindow[1]
+        )  ## end time in milliseconds
 
-        currEvent.freqEnd = np.float32(currEvent.freqStart + currEvent.event.duration / 1000) ## end time of stimulus in milliseconds; note that the duration is already in milliseconds
+        currEvent.freqEnd = np.float32(
+            currEvent.freqStart + currEvent.event.duration / 1000
+        )  ## end time of stimulus in milliseconds; note that the duration is already in milliseconds
 
         ## find the frame number for the start and end time of the stimulus
-        currEvent.frameRate = extract_value(reyeFile['vid'][0][0]['framerate']) ## lots of nesting, but checked and its correct
-        currEvent.firstFrame = np.int32(np.ceil(sessionFrameNums[trial] + timeWindow[0] * currEvent.frameRate)) ## frame number for the start time of the stimulus
-        currEvent.lastFrame = np.int32(np.ceil(sessionFrameNums[trial] + timeWindow[1] * currEvent.frameRate))
+        currEvent.frameRate = extract_value(
+            reyeFile["vid"][0][0]["framerate"]
+        )  ## lots of nesting, but checked and its correct
+        currEvent.firstFrame = np.int32(
+            np.ceil(sessionFrameNums[trial] + timeWindow[0] * currEvent.frameRate)
+        )  ## frame number for the start time of the stimulus
+        currEvent.lastFrame = np.int32(
+            np.ceil(sessionFrameNums[trial] + timeWindow[1] * currEvent.frameRate)
+        )
 
-        ## extracting the spiketimes now 
+        ## extracting the spiketimes now
         for cellNum in range(len(cellEnsemble)):
             currCell = cellEnsemble.get_cell(cellNum)
-            currEvent.spikeTimes.append(currCell.spiketimes[(currCell.spiketimes >= currEvent.OEStartTime) & (currCell.spiketimes <= currEvent.OEEndTime)]) ## extract the spike times within the time window for each cell and append
+            currEvent.spikeTimes.append(
+                currCell.spiketimes[
+                    (currCell.spiketimes >= currEvent.OEStartTime)
+                    & (currCell.spiketimes <= currEvent.OEEndTime)
+                ]
+            )  ## extract the spike times within the time window for each cell and append
 
         ## extract the pupil diameter for the event
-        currEvent.pupilDiameter = pupilDiameter[currEvent.firstFrame:currEvent.lastFrame] ## extract the pupil diameter for the event -> note that this returns an array itself
+        currEvent.pupilDiameter = pupilDiameter[
+            currEvent.firstFrame : currEvent.lastFrame
+        ]  ## extract the pupil diameter for the event -> note that this returns an array itself
 
-        ## time of frames 
-        currEvent.frameNums = np.arange(currEvent.firstFrame, currEvent.lastFrame + 1) ## frame numbers for the event
-        currEvent.frameTimes = np.float32(((currEvent.frameNums - intercept) / framesPerSec))
+        ## time of frames
+        currEvent.frameNums = np.arange(
+            currEvent.firstFrame, currEvent.lastFrame + 1
+        )  ## frame numbers for the event
+        currEvent.frameTimes = np.float32(
+            ((currEvent.frameNums - intercept) / framesPerSec)
+        )
 
         ## store timeWindow and frameWindow
         currEvent.timeWindow = timeWindow
@@ -142,7 +188,7 @@ currSessionProcess = SessionProcess(eventsProcess)
 sessionProcessDF = currSessionProcess.toDataFrame()
 
 
-# ## define the universal start and end times for the entire 30 min session 
+# ## define the universal start and end times for the entire 30 min session
 # universalStartTime = np.int32(eventsProcess[0].OEStartTime) ## start time in milliseconds
 # universalEndTime = np.int32(eventsProcess[-1].OEEndTime) ## end time in milliseconds
 
@@ -151,14 +197,14 @@ sessionProcessDF = currSessionProcess.toDataFrame()
 # matCols = universalEndTime - universalStartTime ## number of columns in the matrix
 # dataMatrix = np.zeros((matRows, matCols))
 
-# ## construct the matrix 
-# for trial in range(len(eventsProcess)): ## i'm calling trial instead of event because events are already defined elsewhere 
+# ## construct the matrix
+# for trial in range(len(eventsProcess)): ## i'm calling trial instead of event because events are already defined elsewhere
 #     currentEvent = eventsProcess[trial]
 
 #     currentStartTime = currentEvent.OEStartTime
 #     currentEndTime = currentEvent.OEEndTime
 
-#     ## convert the start and stop times to columns in the matrix 
+#     ## convert the start and stop times to columns in the matrix
 #     currentStartCol = np.int32(currentStartTime - universalStartTime)
 #     currentEndCol = np.int32(currentEndTime - universalStartTime)
 
@@ -170,22 +216,22 @@ sessionProcessDF = currSessionProcess.toDataFrame()
 #     for frameID in range(len(currentEvent.pupilDiameter)):
 #         frameTime = currentEvent.frameTimes[frameID] ## the time of the frame in milliseconds))
 #         frameColStart = np.int32(frameTime - universalStartTime) + 1 ## start column for the frame -> somehow the universalStartTime is 1 ms ahead of the first frame time
-#         frameColEnd = np.int32(frameColStart + frameTimeDiff) ## end column for the frame assuming the pupil diameter is constant for the duration of the frame -> approximating now 
+#         frameColEnd = np.int32(frameColStart + frameTimeDiff) ## end column for the frame assuming the pupil diameter is constant for the duration of the frame -> approximating now
 #         dataMatrix[1, frameColStart:frameColEnd] = currentEvent.pupilDiameter[frameID] ## insert the pupil diameter in the matrix
 
-#     ## now update the matrix with the spiketimes 
+#     ## now update the matrix with the spiketimes
 #     for cellNum in range(len(cellEnsemble)):
-#         currSpikeTimes = np.int32((currentEvent.spikeTimes[cellNum]) * ms) ## extract the spike times for the current cell  
+#         currSpikeTimes = np.int32((currentEvent.spikeTimes[cellNum]) * ms) ## extract the spike times for the current cell
 #         spikeCol = currSpikeTimes - universalStartTime ## convert the spike times to columns in the matrix
 #         dataMatrix[cellNum + 2, spikeCol] = 1 ## this one represents the spike at that particular ms
 
 
 # fig, ax = plt.subplots(1, 1, figsize=(10, 10))
 
-## plot the spikes 
+## plot the spikes
 # for cellnum in range(dataMatrix[2:].shape[0]):
 #     x = np.arange(dataMatrix.shape[1])
-#     y = dataMatrix[cellnum + 2] * cellnum 
+#     y = dataMatrix[cellnum + 2] * cellnum
 #     ax.plot(x, y, 'k.', markersize=1)
 
 ## plot the pupil diameter
@@ -203,5 +249,5 @@ sessionProcessDF = currSessionProcess.toDataFrame()
 # ax.set_ylabel('Cell Number')
 # plt.show()
 
-# save the dataMatrix as a .npy file 
+# save the dataMatrix as a .npy file
 sessionProcessDF.to_pickle(os.path.join(BONSAI_DIR_PATH, "sessionProcessDF.pkl"))
