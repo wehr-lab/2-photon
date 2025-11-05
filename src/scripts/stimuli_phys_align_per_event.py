@@ -5,13 +5,12 @@ from pathlib import Path
 import glob
 import numpy as np
 import scipy.io as sio
-import matplotlib.pyplot as plt
 import pandas as pd
 
 # Current script directory
-parentDir = Path(__file__).resolve().parent.parent.parent
-print(f"Parent dir: {parentDir}")
-configDir = parentDir / "config"
+repoDir = Path(__file__).resolve().parent.parent
+print(f"Repo dir: {repoDir}")
+configDir = repoDir / "config"
 sys.path.append(str(configDir))
 print(f"Sys path: {sys.path}")
 from settings import DATA_PATH, CODE_PATH
@@ -28,12 +27,12 @@ from ephys.session import Session
 from ephys.session_process import SessionProcess
 
 ## define variables
-BONSAI_DIR_PATH = Path(
+DATA_PATH_AROUSAL = Path(
     DATA_PATH["toneDecode"], "2022-05-10_13-29-57_mouse-0956"
 )  ## or we can do sys.argv to pass the path as an argument
 
 ## load the .mat files
-behaviorFilePath = glob.glob(os.path.join(BONSAI_DIR_PATH, "Beh*.mat"))[0]
+behaviorFilePath = glob.glob(str(Path(DATA_PATH_AROUSAL, "Beh*.mat")))[0]
 behaviorFile = Behavior(behaviorFilePath)
 
 headFile = behaviorFile.get_head_data()
@@ -42,7 +41,7 @@ reyeFile = behaviorFile.get_reye_data()
 ## define the ephys dir
 sessionName = reyeFile["dirName"]
 sessionName = extract_value(sessionName, "dirName")
-ephysDirPath = os.path.join(BONSAI_DIR_PATH, sessionName)
+ephysDirPath = os.path.join(DATA_PATH_AROUSAL, sessionName)
 
 ## load the sortedUnits file
 sortedUnitsFilePath = glob.glob(os.path.join(ephysDirPath, "Sort*.mat"))[0]
@@ -141,7 +140,7 @@ for trial in range(len(session)):
 
         currEvent.freqEnd = np.float32(
             currEvent.freqStart + currEvent.event.duration / 1000
-        )  ## end time of stimulus in milliseconds; note that the duration is already in milliseconds
+        )  ## end time of stimulus in seconds; note that the duration is in milliseconds
 
         ## find the frame number for the start and end time of the stimulus
         currEvent.frameRate = extract_value(
@@ -250,4 +249,4 @@ sessionProcessDF = currSessionProcess.toDataFrame()
 # plt.show()
 
 # save the dataMatrix as a .npy file
-sessionProcessDF.to_pickle(os.path.join(BONSAI_DIR_PATH, "sessionProcessDF.pkl"))
+sessionProcessDF.to_pickle(os.path.join(DATA_PATH_AROUSAL, "sessionProcessDF.pkl"))
