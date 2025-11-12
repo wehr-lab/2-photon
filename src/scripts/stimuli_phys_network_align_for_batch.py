@@ -42,7 +42,7 @@ parser.add_argument(
     help="Path to the session data directory.",
 )
 args = parser.parse_args()
-DATA_PATH_AROUSAL = Path(args.session_path)
+DATA_PATH_AROUSAL = Path(args.session_path)  ## needs the absolute path to the data
 # print("DATA_PATH:", DATA_PATH)
 
 ## make sure that data path exists

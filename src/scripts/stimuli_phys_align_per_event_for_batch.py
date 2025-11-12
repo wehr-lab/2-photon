@@ -1,4 +1,5 @@
 ## import standard libraries
+import argparse
 import os
 import sys
 from pathlib import Path
@@ -8,7 +9,7 @@ import scipy.io as sio
 import pandas as pd
 
 # Current script directory
-repoDir = Path(__file__).resolve().parent.parent
+repoDir = Path(__file__).resolve().parent.parent.parent
 print(f"Repo dir: {repoDir}")
 configDir = repoDir / "config"
 sys.path.append(str(configDir))
@@ -27,9 +28,18 @@ from ephys.session import Session
 from ephys.session_process import SessionProcess
 
 ## define variables
-DATA_PATH_AROUSAL = Path(
-    DATA_PATH["toneDecode"], "2022-05-10_13-29-57_mouse-0956"
-)  ## or we can do sys.argv to pass the path as an argument
+## define the data path for the session to analyze
+parser = argparse.ArgumentParser(
+    description="Process neural and pupil data for a given session."
+)
+parser.add_argument(
+    "--session_path",
+    type=str,
+    required=True,
+    help="Path to the session data directory.",
+)
+args = parser.parse_args()
+DATA_PATH_AROUSAL = Path(args.session_path)  ## needs the absolute path to the data
 
 ## load the .mat files
 behaviorFilePath = glob.glob(str(Path(DATA_PATH_AROUSAL, "Beh*.mat")))[0]
