@@ -109,9 +109,9 @@ lastEventFrame = sessionFrameNums[
 OEFirstEventTime = (
     session.get_event(0).soundcard_trigger_timestamp_sec
 )  ## OE time in seconds when the first stimulus was presented
-OELastEventTime = (
-    session.get_event(-1).soundcard_trigger_timestamp_sec
-)  ## OE time in seconds when the last stimulus was presented
+OELastEventTime = session.get_event(
+    -1
+).soundcard_trigger_timestamp_sec  ## OE time in seconds when the last stimulus was presented -> TODO! this comes to 1919.9 sec which is not the expected time of 1800 sec
 
 ## to track the frame numbers with OE time, find the slope and intercept of FrameNumber vs OE time
 framesPerSec = (lastEventFrame - firstEventFrame) / (OELastEventTime - OEFirstEventTime)
