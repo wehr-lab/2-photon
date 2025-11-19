@@ -2,13 +2,11 @@
 
 ** Data checks 
 1. Check the value types of the full matrix
-2. How sparse is the matrix? 
-3. Is the graph fragmented or 1 connected component? 
-6. Since the GC matrix is sparse, how do the connections and their density track with the pupil size? 
-7. Bin the matrix and other data
+3. Is the graph fragmented or 1 connected component? How many bins do we need to make the graph connected?
+
 8. Multilayer graphs algorithms from Basset. 
 
 9. Static graph: Module max and rich club analysis  
-5. Align spikes, pupil size, and GC matrix temporally.
-** Philosophical problems 
-4. Problem of partial observability 
+
+
+5. Check low frequency vs high freq coupling of neurons -> from point process to firing rate to coupling of neurons in different spectral frequencies. The reason is that we are looking at both synaptic coupling and also shared modulations (low freq) in the observed neural system. Such shared modulations can come in the form of differing arousal level, etc.
