@@ -1,18 +1,20 @@
 """
-This is a configuration file for network computation project. 
+This is a configuration file for network computation project.
 It contains settings for the project, including paths to data directories, model configurations, and other parameters.
 """
 
-import os 
+import os
 import sys
 from pathlib import Path
 
-## Project data directories 
+## Project data directories
 DATA_PATH = {}
-DATA_PATH["universal"] = "/".join(os.path.dirname(__file__).split("/")[:-2]) + "/data/"
+## on hpc
+# DATA_PATH["universal"] = "/".join(os.path.dirname(__file__).split("/")[:-2]) + "/data/"
+# DATA_PATH["toneDecode"] = os.path.join(DATA_PATH["universal"], "tone_decode_data")
 
-# print(DATA_PATH)
-DATA_PATH["toneDecode"] = os.path.join(DATA_PATH["universal"], "tone_decode_data")
+## on local machine
+DATA_PATH["toneDecode"] = "/Volumes/Projects/ToneDecodingArousal"
 
 
 ## Project code directories

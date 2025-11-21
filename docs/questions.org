@@ -4,4 +4,4 @@
 This note is the space I use to gather outstanding (not resolved) questions as I am developing my understanding of computation in networks.
 
 * Questions
-1. In the context of functional connectivity in brain networks, what is the significance of looking at low and high frequency bands separately? Why not just look at the raw signal (preprocessed in a suitable manner)?
+1. 

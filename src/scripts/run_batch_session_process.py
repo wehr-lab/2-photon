@@ -37,7 +37,7 @@ class BatchSessionProcessor:
                 ]:
                     print(f"Running temporal alignment for session: {session_path}")
                     cmd = [
-                        "python3",
+                        "python",
                         str(
                             Path(
                                 CODE_PATH["2-photon"],
@@ -79,7 +79,7 @@ class BatchSessionProcessor:
             ]:
                 print(f"Running session processing for session: {session_path}")
                 cmd = [
-                    "python3",
+                    "python",
                     str(
                         Path(
                             CODE_PATH["2-photon"],
@@ -123,5 +123,5 @@ if __name__ == "__main__":
             session_list.append(mouseDir)
     print(f"Found {len(session_list)} sessions to process.")
 
-    batch_processor = BatchSessionProcessor([session_list[0]])
+    batch_processor = BatchSessionProcessor(session_list[120:130])
     batch_processor.run_processor()

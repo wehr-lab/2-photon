@@ -248,7 +248,7 @@ if n_cells_network != len(cells):
         f"WARNING: Network has {n_cells_network} cells but spike data has {len(cells)} cells"
     )
 else:
-    print("Network and spike data have matching cell counts")
+    print(f"Network and spike data have matching cell counts: {len(cells)} cells")
 
 ##
 # Calculate network time bin duration
