@@ -3,3 +3,5 @@ Questions:
 2. The binning time: average of ISI? Got this idea from: https://www.youtube.com/watch?v=HGrJIcwhPlg&ab_channel=iiptv
 
 Not all cells were used for network construction, so when we use the spiking data, use the "Resp" field of the hdf5todict converted dict. 
+
+For plottting: use %matplotlib notebook for interactive plots in jupyter notebook.

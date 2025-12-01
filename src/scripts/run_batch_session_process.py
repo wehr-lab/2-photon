@@ -123,5 +123,5 @@ if __name__ == "__main__":
             session_list.append(mouseDir)
     print(f"Found {len(session_list)} sessions to process.")
 
-    batch_processor = BatchSessionProcessor(session_list[120:130])
+    batch_processor = BatchSessionProcessor(session_list[220:])
     batch_processor.run_processor()
