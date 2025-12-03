@@ -4,4 +4,4 @@ Questions:
 
 Not all cells were used for network construction, so when we use the spiking data, use the "Resp" field of the hdf5todict converted dict. 
 
-For plottting: use %matplotlib notebook for interactive plots in jupyter notebook.
+Before fitting SVM (or any classifier) for the tone decode data, make sure I am using the time points where the neural states are the furthest apart. 
