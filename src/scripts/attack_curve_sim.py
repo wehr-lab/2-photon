@@ -4,12 +4,14 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
 # Functions to compute metrics
 def compute_rich_club(G, k=5):
     rich_nodes = [n for n in G.nodes if G.degree[n] > k]
     subgraph = G.subgraph(rich_nodes)
     possible_edges = len(rich_nodes) * (len(rich_nodes) - 1) / 2
     return subgraph.number_of_edges() / possible_edges if possible_edges else 0
+
 
 def compute_small_worldness(G):
     if not nx.is_connected(G):
@@ -34,6 +36,7 @@ def compute_small_worldness(G):
         return 0
     return (C / C_rand) / (L / L_rand) if C_rand and L_rand else 0
 
+
 # Simulation settings
 n_nodes = 500
 n_subjects = 5
@@ -43,16 +46,18 @@ attack_steps = 15
 rc_rich, rc_rand = [], []
 sw_rich, sw_rand = [], []
 
-bin_mat = np.load("/Users/praveslamichhane/Desktop/network_comp/data/bin_mat.npy", allow_pickle=True)
+bin_mat = np.load(
+    "/Users/praveslamichhane/Desktop/network_compute_experiment/data/processed/bin_mat.npy",
+    allow_pickle=True,
+)
 # Simulation loop
 for _ in range(n_subjects):
-    
     G_base = nx.from_numpy_array(bin_mat)
 
-    G1 = G_base.copy() ## for rich-club attack
-    G2 = G_base.copy() ## for random attack
-    r1, r2 = [], [] ## rich-club coefficients but for 1 subject
-    s1, s2 = [], [] ## small-worldness but for 1 subject
+    G1 = G_base.copy()  ## for rich-club attack
+    G2 = G_base.copy()  ## for random attack
+    r1, r2 = [], []  ## rich-club coefficients but for 1 subject
+    s1, s2 = [], []  ## small-worldness but for 1 subject
 
     for _ in range(attack_steps):
         r1.append(compute_rich_club(G1))
@@ -67,44 +72,48 @@ for _ in range(n_subjects):
     sw_rich.append(s1)
     sw_rand.append(s2)
 
+
 # Prepare DataFrames
 def aggregate_results(trajectories, label):
     df = pd.DataFrame(trajectories).T
-    df['Step'] = df.index
-    df = df.melt(id_vars='Step', var_name='Subject', value_name='Value')
-    df['AttackType'] = label
+    df["Step"] = df.index
+    df = df.melt(id_vars="Step", var_name="Subject", value_name="Value")
+    df["AttackType"] = label
     return df
 
-df_rc = pd.concat([
-    aggregate_results(rc_rich, 'Rich-Club'),
-    aggregate_results(rc_rand, 'Random')
-])
-df_rc['Metric'] = 'Rich-Club Coefficient'
 
-df_sw = pd.concat([
-    aggregate_results(sw_rich, 'Rich-Club'),
-    aggregate_results(sw_rand, 'Random')
-])
-df_sw['Metric'] = 'Small-Worldness'
+df_rc = pd.concat(
+    [aggregate_results(rc_rich, "Rich-Club"), aggregate_results(rc_rand, "Random")]
+)
+df_rc["Metric"] = "Rich-Club Coefficient"
+
+df_sw = pd.concat(
+    [aggregate_results(sw_rich, "Rich-Club"), aggregate_results(sw_rand, "Random")]
+)
+df_sw["Metric"] = "Small-Worldness"
 
 df_all = pd.concat([df_rc, df_sw], ignore_index=True)
 
 # Plotting
 sns.set(style="whitegrid", font_scale=1.2)
-metrics = df_all['Metric'].unique()
+metrics = df_all["Metric"].unique()
 fig, axes = plt.subplots(1, len(metrics), figsize=(14, 6), sharex=True)
 
 for ax, metric in zip(axes, metrics):
     sns.lineplot(
-        data=df_all[df_all['Metric'] == metric],
-        x='Step', y='Value',
-        hue='AttackType', ci=95,
-        palette='Set1', linewidth=2.5, ax=ax
+        data=df_all[df_all["Metric"] == metric],
+        x="Step",
+        y="Value",
+        hue="AttackType",
+        ci=95,
+        palette="Set1",
+        linewidth=2.5,
+        ax=ax,
     )
     ax.set_title(metric)
     ax.set_xlabel("Nodes Removed")
     ax.set_ylabel("Value")
-    ax.legend(title='Attack Type')
+    ax.legend(title="Attack Type")
 
 plt.suptitle("Attack Impact on Network Metrics (95% Confidence Interval)", fontsize=16)
 plt.tight_layout(rect=[0, 0, 1, 0.95])
