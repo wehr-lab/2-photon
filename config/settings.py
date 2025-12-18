@@ -10,11 +10,13 @@ from pathlib import Path
 ## Project data directories
 DATA_PATH = {}
 ## on hpc
-DATA_PATH["universal"] = "/".join(os.path.dirname(__file__).split("/")[:-2]) + "/data/"
-DATA_PATH["toneDecode"] = os.path.join(DATA_PATH["universal"], "tone_decode_data")
+# DATA_PATH["universal"] = "/".join(os.path.dirname(__file__).split("/")[:-2]) + "/data/"
+# DATA_PATH["toneDecode"] = os.path.join(DATA_PATH["universal"], "tone_decode_data")
 
-## on local machine
-# DATA_PATH["toneDecode"] = "/Volumes/Projects/ToneDecodingArousal"
+# on local machine
+DATA_PATH["toneDecode"] = (
+    "/Users/praveslamichhane/project_data/wehrlab/tone_decode_data"
+)
 
 
 ## Project code directories
