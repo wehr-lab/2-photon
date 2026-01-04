@@ -18,6 +18,7 @@ DATA_PATH["toneDecode"] = (
     "/Users/praveslamichhane/project_data/wehrlab/tone_decode_data"
 )
 
+DATA_PATH["2_photon"] = "/Users/praveslamichhane/project_data/wehrlab/2_photon_data/"
 
 ## Project code directories
 CODE_PATH = {}
