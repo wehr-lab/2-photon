@@ -22,8 +22,8 @@ quad_data = double(quad_data);
 speed = zeros([1, length(quad_data)]);
 
 for iFrame = 2:length(quad_data)
-    speed(iFrame) = (0.0054 * (quad_data(iFrame) - quad_data(iFrame - 1)))/0.0646;
-    
+    speed(iFrame) = (0.005469 * (quad_data(iFrame) - quad_data(iFrame - 1)))/0.0646;
+    %cm/s
     
 end
 

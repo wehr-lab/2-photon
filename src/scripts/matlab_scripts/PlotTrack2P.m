@@ -20,7 +20,7 @@ if length(varargin) == 3
     end
     spikeLog = varargin{3};
 else
-    spikeLog = 1;                                                           % Logical variable to switch between plotting luminence traces or deconvolved spikes
+    spikeLog = 0;                                                           % Logical variable to switch between plotting luminence traces or deconvolved spikes
 end
 smin = 0.5;                                                                 % Threshold for spikes (smin * maxvalue per cell = minimum spike threshold)
 
@@ -29,7 +29,7 @@ datapathparts = strsplit(datadir, '/');
 mouseID = datapathparts{6}; 
 figdir = '/Users/sammehan/Documents/Wehr Lab/Alzheimers2P/Figs'; % where would you like to save these figures?
 basedir = '/Volumes/Projects/2P5XFAD/JarascopeData/'; % full data directory path to build subsequent filepaths from
-savename = fullfile(figdir, sprintf('%s-Tracked-%s.pdf', mouseID, datapathparts{8}));
+savename = fullfile(figdir, sprintf('%s-Tracked-%s.ps', mouseID, datapathparts{8}));
 
 dirFilter = strcat(datadir, '/*-*');
 matched_sessions = dir(dirFilter); 
@@ -44,8 +44,8 @@ for iDir = 1:length(Sessions)
     tempH5 = dir(fullfile(curr_session, Sessions{iDir}, '*.h5'));
     if isempty(tempH5)
         if exist(fullfile('/Volumes/Projects/2P5XFAD/JarascopeData/behavior/', mouseID), 'dir')
-            dateparts = strsplit(datapathparts{end}, '-'); month = dateparts{1}; day = dateparts{2}; year = strcat('20', dateparts{end});
-            behaviorfiles = dir(fullfile('/Volumes/Projects/2P5XFAD/JarascopeData/behavior/', mouseID, strcat(mouseID, '_am_tuning_curve_', year, month, day, '_', sessionID)));
+            dateparts = strsplit(Sessions{iDir}, '-'); month = dateparts{1}; day = dateparts{2}; year = strcat('20', dateparts{3}); sessionID = dateparts{end};
+            behaviorfiles = dir(fullfile('/Volumes/Projects/2P5XFAD/JarascopeData/behavior/', mouseID, strcat(mouseID, '_tones_and_wn_', year, month, day, '-', sessionID, '.h5')));
             if isempty(behaviorfiles)
                 behaviorfiles = dir(fullfile('/Volumes/Projects/2P5XFAD/JarascopeData/behavior/', mouseID, strcat(mouseID, '_am_tuning_curve_', year, month, day)));
                 if length(behaviorfiles) > 1
@@ -262,7 +262,7 @@ for currCell = 1:size(cellsToPlotCorr{1}, 1)
             end
         end
         if length(varargin) <= 1
-%             print(savename, '-dpsc2', '-append', '-bestfit');
+            print(savename, '-dpsc2', '-append', '-bestfit');
 %             if currCell == 1 && iDir == 1
 %                 exportgraphics(gcf, savename, 'ContentType', 'image');
 %             else
