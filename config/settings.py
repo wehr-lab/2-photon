@@ -24,6 +24,6 @@ DATA_PATH["2_photon"] = "/Users/praveslamichhane/project_data/wehrlab/2_photon_d
 CODE_PATH = {}
 
 CODE_PATH["2-photon"] = "/".join(os.path.dirname(__file__).split("/")[:-1]) + "/src/"
-print(CODE_PATH)
+# print(CODE_PATH)
 
 CODE_PATH["EXT_LIB"] = "/gpfs/home/praves/wehrlab/ext_lib/Dynamic-Graph-Metrics"
